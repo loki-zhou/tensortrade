@@ -284,11 +284,11 @@ def start():
             low=taData[(coin + ":low")],
             close=taData[(coin + ":close")],
         ).ultimate_oscillator()
-        dataset["adx"] = ta.trend.ADXIndicator(
-            high=taData[(coin + ":high")],
-            low=taData[(coin + ":low")],
-            close=taData[(coin + ":close")],
-        ).adx()
+        # dataset["adx"] = ta.trend.ADXIndicator(
+        #     high=taData[(coin + ":high")],
+        #     low=taData[(coin + ":low")],
+        #     close=taData[(coin + ":close")],
+        # ).adx()
         dataset["mass_index"] = ta.trend.MassIndex(
             high=taData[(coin + ":high")], low=taData[(coin + ":low")]
         ).mass_index()
@@ -585,13 +585,13 @@ def render_env(env, agent, lstm, data, asset):
     while not done:
         # Using LSTM
         if lstm == True:
-            action, state, logit = agent.compute_action(
+            action, state, logit = agent.compute_single_action(
                 observation=obs, prev_action=1.0, prev_reward=0.0, state=state
             )
         # Without LSTM
         else:
-            action = agent.compute_action(obs)
-        obs, reward, done, info = env.step(action)
+            action = agent.compute_single_action(obs)
+        obs, reward, done, truncated, info = env.step(action)
         episode_reward += reward
 
         networth.append(info["net_worth"])
