@@ -15,7 +15,8 @@
 from abc import abstractmethod, ABCMeta
 from typing import Any
 
-from gym.spaces import Space
+#from gym.spaces import Space
+from gymnasium.spaces import Space
 
 
 from tensortrade.core.component import Component

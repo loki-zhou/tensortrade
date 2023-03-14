@@ -91,7 +91,7 @@ class Binance_strategy:
                 return tickers, None
 
         def get_tickers_short(pair=None):
-            tickers = pd.DataFrame(crypto.spot_client.get_ticker())
+            tickers = pd.DataFrame(self.crypto.spot_client.get_ticker())
             tickers[['priceChangePercent', 'bidQty', 'askQty']] = \
                 tickers[['priceChangePercent', 'bidQty', 'askQty']].astype(float)
             tickers = tickers[tickers['bidQty'] > tickers['askQty']]

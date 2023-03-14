@@ -15,10 +15,12 @@
 import uuid
 import logging
 
-from typing import Dict, Any, Tuple
+from typing import Dict, Any, Tuple, Optional, Union
 from random import randint
 
-import gym
+
+#import gym
+import gymnasium as gym
 import numpy as np
 
 from tensortrade.core import TimeIndexed, Clock, Component
@@ -132,9 +134,10 @@ class TradingEnv(gym.Env, TimeIndexed):
 
         self.clock.increment()
 
-        return obs, reward, done, info
+        return obs, reward, done, False, info
 
-    def reset(self) -> 'np.array':
+    def reset(self, *, seed: Optional[int] = None,options: Optional[dict] = None)->Tuple[np.array, dict]:
+    #def reset(self) -> 'np.array':
         """Resets the environment.
 
         Returns
@@ -142,6 +145,8 @@ class TradingEnv(gym.Env, TimeIndexed):
         obs : `np.array`
             The first observation of the environment.
         """
+
+        super().reset(seed=seed)
         if self.random_start_pct > 0.00:
             size = len(self.observer.feed.process[-1].inputs[0].iterable)
             random_start = randint(0, int(size * self.random_start_pct))
@@ -162,7 +167,7 @@ class TradingEnv(gym.Env, TimeIndexed):
 
         self.clock.increment()
 
-        return obs
+        return obs, {}
 
     def render(self, **kwargs) -> None:
         """Renders the environment."""
