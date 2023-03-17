@@ -142,7 +142,7 @@ config={
     "framework": "torch",
     "ignore_worker_failures": True,
     "num_workers": 1,
-    "num_gpus": 1,
+    "num_gpus": 0,
     "clip_rewards": True,
     "lr": 8e-6,
     "lr_schedule": [
@@ -154,62 +154,47 @@ config={
         [int(1e6), 1e-6],
         [int(1e7), 1e-7]
     ],
-    "gamma": 0,
+    "gamma": 0.99,
     "observation_filter": "MeanStdFilter",
     "lambda": 0.72,
     "vf_loss_coeff": 0.5,
     "entropy_coeff": 0.01
 }
+# stop = {
+#     "episode_reward_mean": 600,
+# }
 stop = {
-    "episode_reward_mean": 700,
+    "episode_reward_min": 200,
 }
 if 1:
+    ray.init()
     analysis = tune.Tuner(
         "PPO", param_space=config, run_config=air.RunConfig(stop=stop, checkpoint_config=air.CheckpointConfig(checkpoint_at_end=True))
     ).fit()
 
     # Get the best result based on a particular metric.
-    best_result = analysis.get_best_result(metric="episode_reward_mean", mode="max")
+    #best_result = analysis.get_best_result(metric="episode_reward_mean", mode="max")
 
     # Get the best checkpoint corresponding to the best result.
-    best_checkpoint = best_result.checkpoint
-    pprint(best_checkpoint)
+    #best_checkpoint = best_result.checkpoint
+    #pprint(best_checkpoint)
     #Checkpoint(local_path=C:\Users\loki_\ray_results\PPO\PPO_TradingEnv_dbb99_00000_0_2023-03-16_20-34-13\checkpoint_000006)
 
 else:
     import ray.rllib.agents.ppo as ppo
-    agent = ppo.PPOTrainer(
-        env="TradingEnv",
-        config={
-            "env_config": {
-                "window_size": 25
-            },
-            "framework": "torch",
-            "log_level": "DEBUG",
-            "ignore_worker_failures": True,
-            "num_workers": 1,
-            "num_gpus": 0,
-            "clip_rewards": True,
-            "lr": 8e-6,
-            "lr_schedule": [
-                [0, 1e-1],
-                [int(1e2), 1e-2],
-                [int(1e3), 1e-3],
-                [int(1e4), 1e-4],
-                [int(1e5), 1e-5],
-                [int(1e6), 1e-6],
-                [int(1e7), 1e-7]
-            ],
-            "gamma": 0,
-            "observation_filter": "MeanStdFilter",
-            "lambda": 0.72,
-            "vf_loss_coeff": 0.5,
-            "entropy_coeff": 0.01
-        }
-    )
+    # agent = ppo.PPOTrainer(
+    #     env="TradingEnv",
+    #     config=config
+    # )
 
-    checkpoint_path = r"C:\Users\loki_\ray_results\PPO\PPO_TradingEnv_349e6_00000_0_2023-03-16_22-59-52\checkpoint_000010"
-    agent.restore(checkpoint_path)
+    checkpoint_path = r"C:\Users\zhouyi\ray_results\PPO\PPO_TradingEnv_d2c65_00000_0_2023-03-17_18-31-05\checkpoint_000026"
+    # agent.restore(checkpoint_path)
+    # agent
+    # best_checkpoint
+    from ray.rllib.algorithms.algorithm import Algorithm
+    agent = Algorithm.from_checkpoint(checkpoint_path)
+    #loaded_policy = agent.get_policy()
+    #agent = Algorithm.from_checkpoint(best_checkpoint)
     #%%
     # Instantiate the environment
     env = create_env({
@@ -219,12 +204,28 @@ else:
     # Run until episode ends
     episode_reward = 0
     done = False
-    obs = env.reset()
-
+    obs, info = env.reset()
+    step = 0
+    prev_a = 0
+    prev_r = 0.0
     while not done:
         action = agent.compute_single_action(obs)
-        obs, reward, done, _, info = env.step(action)
-        print("reward", reward)
+        #action = agent.compute_action(obs)
+        obs, reward, done, truncated, _  = env.step(action)
+        #print("action = ", action, "reward = ", reward, " step =", step )
         episode_reward += reward
+        if done:
+            if episode_reward  < 100:
+                print("episode_reward = ", episode_reward)
+                obs, info = env.reset()
+                step = 0
+                episode_reward = 0
+                done = False
+            else:
+                print("episode_reward = ", episode_reward)
+                pass
+        step += 1
+
+
     print("episode_reward = ", episode_reward)
     env.render()
