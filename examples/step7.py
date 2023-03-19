@@ -1,47 +1,56 @@
-from ray.rllib.algorithms.ppo import PPOConfig
-from ray.tune.logger import pretty_print
+"""
+Example script on how to train, save, load, and test an RLlib agent.
+Equivalent script with stable baselines: sb2rllib_sb_example.py.
+Demonstrates transition from stable_baselines to Ray RLlib.
 
-
-# algo = (
-#     PPOConfig()
-#     .rollouts(num_rollout_workers=1)
-#     .resources(num_gpus=0)
-#     .environment(env="CartPole-v1")
-#     .build()
-# )
-#
-# for i in range(10):
-#     result = algo.train()
-#     print(pretty_print(result))
-#
-#     if i % 5 == 0:
-#         checkpoint_dir = algo.save()
-#         print(f"Checkpoint saved in directory {checkpoint_dir}")
-#
-
-
-# Note: `gymnasium` (not `gym`) will be **the** API supported by RLlib from Ray 2.3 on.
-
+Run example: python sb2rllib_rllib_example.py
+"""
 import gymnasium as gym
+from ray import tune, air
+import ray.rllib.algorithms.ppo as ppo
 
-
-from ray.rllib.algorithms.algorithm import Algorithm
-
-from ray.rllib.algorithms.ppo import PPOConfig
-
+# settings used for both stable baselines and rllib
 env_name = "CartPole-v1"
-env = gym.make(env_name)
-#algo = PPOConfig().environment(env_name).build()
-checkpoint_path = r"C:\Users\zhouyi/ray_results\PPO_CartPole-v1_2023-03-17_17-56-59z3lpriyp\checkpoint_000006"
-algo = Algorithm.from_checkpoint(checkpoint_path)
-episode_reward = 0
-terminated = truncated = False
+train_steps = 10000
+learning_rate = 1e-3
+save_dir = "saved_models"
 
+# training and saving
+analysis = tune.Tuner(
+    "PPO",
+    run_config=air.RunConfig(
+        stop={"timesteps_total": train_steps},
+        local_dir=save_dir,
+        checkpoint_config=air.CheckpointConfig(
+            checkpoint_at_end=True,
+        ),
+    ),
+    param_space={"env": env_name, "lr": learning_rate},
+).fit()
+# retrieve the checkpoint path
+# analysis.default_metric = "episode_reward_mean"
+# analysis.default_mode = "max"
+# checkpoint_path = analysis.get_best_checkpoint(trial=analysis.get_best_trial())
+# print(f"Trained model saved at {checkpoint_path}")
 
+# best_result = analysis.get_best_result(metric="episode_reward_mean", mode="max")
+# checkpoint_path = best_result.checkpoint
+checkpoint_path = r"D:\rl\tensortrade\examples\saved_models\PPO\PPO_CartPole-v1_2b956_00000_0_2023-03-19_11-36-01\checkpoint_000003"
+# load and restore model
+agent = ppo.PPO(env=env_name)
+agent.restore(checkpoint_path)
+print(f"Agent loaded from saved model at {checkpoint_path}")
+
+# inference
+env = gym.make(env_name, render_mode="rgb_array")
 obs, info = env.reset()
-
-while not terminated and not truncated:
-    action = algo.compute_single_action(obs)
+episode_reward = 0
+for i in range(1000):
+    action = agent.compute_single_action(obs)
     obs, reward, terminated, truncated, info = env.step(action)
+    #env.render()
     episode_reward += reward
+    if terminated or truncated:
+        print(f"Cart pole ended after {i} steps.")
+        break
 print("episode_reward = ", episode_reward)
