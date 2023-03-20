@@ -282,7 +282,7 @@ def runmode(checkpoint_path):
 
 
 #train()
-checkpoint_path = r"D:\rl\tensortrade\examples\saved_models\PPO\PPO_TradingEnv_cf167_00000_0_2023-03-20_11-03-37\checkpoint_000016"
+checkpoint_path = r"D:\rl\tensortrade\examples\saved_models\PPO\PPO_TradingEnv_bfbe5_00000_0_2023-03-20_16-11-00\checkpoint_000017"
 # checkpoint_path = r"C:\Users\loki_\ray_results\PPO"
 # tuner = tune.Tuner.restore(checkpoint_path)
 # results = tuner.get_results()
