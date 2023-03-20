@@ -172,26 +172,40 @@ def train():
     # tuner = tune.Tuner(
     #     "PPO", param_space=config, run_config=air.RunConfig(stop=stop, checkpoint_config=air.CheckpointConfig(checkpoint_at_end=True))
     # )
-    tuner = tune.Tuner(
-        "PPO", param_space=config, run_config=air.RunConfig(stop=stop,
-                                                            local_dir="saved_models",
-                                                            checkpoint_config=air.CheckpointConfig(checkpoint_frequency=2,checkpoint_at_end=True)))
+    # tuner = tune.Tuner(
+    #     "PPO", param_space=config, run_config=air.RunConfig(stop=stop,
+    #                                                         local_dir="saved_models",
+    #                                                         checkpoint_config=air.CheckpointConfig(checkpoint_frequency=2,checkpoint_at_end=True)))
+    #
+    # results = tuner.fit()
+    # best_result = results.get_best_result(metric="episode_reward_mean", mode="max")
+    # best_checkpoint = best_result.checkpoint
+    # pprint(best_checkpoint)
 
-    results = tuner.fit()
+    analysis = tune.run(
+        "PPO",
+        stop=stop,
+        config = config,
+        checkpoint_at_end=True,
+        local_dir="saved_models",
+    )
 
     # Get the best result based on a particular metric.
-    best_result = results.get_best_result(metric="episode_reward_mean", mode="max")
-    best_checkpoint = best_result.checkpoint
+
     # checkpoints = results.get_trial_checkpoints_paths(
     #     trial=results.get_best_trial("episode_reward_mean"),
     #     metric="episode_reward_mean",
     #     mode='max'
     # )
     # best_checkpoint = checkpoints[0][0]
-
-
+    checkpoints = analysis.get_trial_checkpoints_paths(
+        trial=analysis.get_best_trial("episode_reward_mean"),
+        metric="episode_reward_mean",
+    )
+    checkpoint_path = checkpoints[0][0]
+    print(checkpoint_path)
     # Get the best checkpoint corresponding to the best result.
-    pprint(best_checkpoint)
+
     ray.shutdown()
     #Checkpoint(local_path=C:\Users\loki_\ray_results\PPO\PPO_TradingEnv_dbb99_00000_0_2023-03-16_20-34-13\checkpoint_000006)
 
@@ -227,6 +241,9 @@ def runmode(checkpoint_path):
     #agent = Algorithm.from_checkpoint(best_checkpoint)
     #%%
     # Instantiate the environment
+    env = create_env({
+        "window_size": 25
+    })
 
     # Run until episode ends
     episode_reward = 0
@@ -265,7 +282,7 @@ def runmode(checkpoint_path):
 
 
 #train()
-checkpoint_path = r"D:\rl\tensortrade\examples\saved_models\PPO\PPO_TradingEnv_5f284_00000_0_2023-03-19_22-00-14\checkpoint_000004"
+checkpoint_path = r"D:\rl\tensortrade\examples\saved_models\PPO\PPO_TradingEnv_cf167_00000_0_2023-03-20_11-03-37\checkpoint_000016"
 # checkpoint_path = r"C:\Users\loki_\ray_results\PPO"
 # tuner = tune.Tuner.restore(checkpoint_path)
 # results = tuner.get_results()
