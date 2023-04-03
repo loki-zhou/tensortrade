@@ -132,12 +132,20 @@ env = create_env({
 check_env(env)
 
 from stable_baselines3 import PPO
+import os
+from common import SaveOnBestTrainingRewardCallback
+from stable_baselines3.common.monitor import Monitor
 #verbose 0不打印任何训练信息，1打印训练信息，2打印调试信息
+monitor_dir = r'./monitor_log/'
+os.makedirs(monitor_dir,exist_ok=True)
+env = Monitor(env, monitor_dir)
 model = PPO("MlpPolicy", env, verbose=1)
 # model.set_parameters("ppo_trade")
 print(model.n_steps)
-model.learn(total_timesteps=500_000)
-model.save("ppo_trade")
+
+callback = SaveOnBestTrainingRewardCallback(check_freq=10, log_dir=monitor_dir)
+model.learn(total_timesteps=500_000, callback=callback)
+#model.save("ppo_trade")
 
 
 # model = PPO.load("ppo_trade")
