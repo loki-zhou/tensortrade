@@ -138,27 +138,30 @@ from stable_baselines3.common.monitor import Monitor
 #verbose 0不打印任何训练信息，1打印训练信息，2打印调试信息
 monitor_dir = r'./monitor_log/'
 os.makedirs(monitor_dir,exist_ok=True)
-env = Monitor(env, monitor_dir)
-model = PPO("MlpPolicy", env, verbose=1)
+# env = Monitor(env, monitor_dir)
+# model = PPO("MlpPolicy", env, verbose=1,
+#             gamma = 0,
+#             learning_rate=8e-6,
+#             ent_coef = 0.01)
 # model.set_parameters("ppo_trade")
-print(model.n_steps)
+# print(model.n_steps)
 
-callback = SaveOnBestTrainingRewardCallback(check_freq=10, log_dir=monitor_dir)
-model.learn(total_timesteps=500_000, callback=callback)
+# callback = SaveOnBestTrainingRewardCallback(check_freq=10, log_dir=monitor_dir)
+# model.learn(total_timesteps=500_000, callback=callback)
 #model.save("ppo_trade")
 
 
-# model = PPO.load("ppo_trade")
-#
-# episode_reward = 0
-# done = False
-# obs, info = env.reset()
-# step = 0
-# prev_a = 0
-# prev_r = 0.0
-# while not done:
-#     action, _states = model.predict(obs)
-#     obs, reward, done, truncated, info = env.step(action)
-#     episode_reward += reward
-# print("episode_reward = ", episode_reward)
-# env.render()
+model = PPO.load(monitor_dir+"best_model.zip")
+
+episode_reward = 0
+done = False
+obs, info = env.reset()
+step = 0
+prev_a = 0
+prev_r = 0.0
+while not done:
+    action, _states = model.predict(obs)
+    obs, reward, done, truncated, info = env.step(action)
+    episode_reward += reward
+print("episode_reward = ", episode_reward)
+env.render()
