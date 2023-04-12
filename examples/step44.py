@@ -131,7 +131,7 @@ env = create_env({
 
 check_env(env)
 
-from stable_baselines3 import PPO
+from stable_baselines3 import PPO, DQN
 import os
 from common import SaveOnBestTrainingRewardCallback
 from stable_baselines3.common.monitor import Monitor
@@ -143,15 +143,20 @@ os.makedirs(monitor_dir,exist_ok=True)
 #             gamma = 0,
 #             learning_rate=8e-6,
 #             ent_coef = 0.01)
-# model.set_parameters("ppo_trade")
+# model = DQN("MlpPolicy", env, verbose=1,
+#             gamma = 0,
+#             learning_rate=8e-6,
+#             )
+#model.set_parameters("dqn_trade")
 # print(model.n_steps)
 
 # callback = SaveOnBestTrainingRewardCallback(check_freq=10, log_dir=monitor_dir)
 # model.learn(total_timesteps=500_000, callback=callback)
+
 #model.save("ppo_trade")
 
 
-model = PPO.load(monitor_dir+"best_model.zip")
+model = DQN.load(monitor_dir+"best_model.zip")
 
 episode_reward = 0
 done = False
