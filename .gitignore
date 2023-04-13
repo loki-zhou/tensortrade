@@ -29,6 +29,10 @@ Pipfile
 # agent storage
 examples/agents
 examples/training_logs
+examples/tensorboard
+examples/monitor_log
+.db
+
 
 # virtual environment
 venv
