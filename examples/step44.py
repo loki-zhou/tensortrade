@@ -125,50 +125,54 @@ def create_env(config):
     return environment
 
 from stable_baselines3.common.env_checker import check_env
-env = create_env({
-        "window_size": 25
-    })
-
-check_env(env)
-
-from stable_baselines3 import PPO, DQN
 import os
 from common import SaveOnBestTrainingRewardCallback
 from stable_baselines3.common.monitor import Monitor
-#verbose 0不打印任何训练信息，1打印训练信息，2打印调试信息
+from stable_baselines3 import PPO
 monitor_dir = r'./monitor_log/'
-os.makedirs(monitor_dir,exist_ok=True)
-env = Monitor(env, monitor_dir)
-args = {'n_steps': 275, 'gamma': 0.9011458216956809,
-        'learning_rate': 5.727138047171723e-05,
-        'ent_coef': 0.002521766074781211,
-        'clip_range': 0.1442982000502003, 'gae_lambda': 0.9230866994343214}
-model = PPO("MlpPolicy", env, verbose=1,
-            **args)
-# model = DQN("MlpPolicy", env, verbose=1,
-#             gamma = 0,
-#             learning_rate=8e-6,
-#             )
-#model.set_parameters("dqn_trade")
-# print(model.n_steps)
+os.makedirs(monitor_dir, exist_ok=True)
 
-callback = SaveOnBestTrainingRewardCallback(check_freq=10, log_dir=monitor_dir)
-model.learn(total_timesteps=500_000, callback=callback)
+def train():
+    env = create_env({
+            "window_size": 25
+        })
+    #check_env(env)
+    env = Monitor(env, monitor_dir)
+
+    #verbose 0不打印任何训练信息，1打印训练信息，2打印调试信息
+
+    args = {'n_steps': 275, 'gamma': 0,
+            'learning_rate': 5.727138047171723e-05,
+            'ent_coef': 0.002521766074781211,
+            'clip_range': 0.1442982000502003, 'gae_lambda': 0.9230866994343214}
+    model = PPO("MlpPolicy", env, verbose=1,
+                **args)
+
+    # print(model.n_steps)
+
+    callback = SaveOnBestTrainingRewardCallback(check_freq=10, log_dir=monitor_dir)
+    model.learn(total_timesteps=500_000, callback=callback)
 
 #model.save("ppo_trade")
 
+def ptest():
+    model = PPO.load(monitor_dir+"best_model.zip")
+    env = create_env({
+            "window_size": 25
+        })
+    episode_reward = 0
+    done = False
+    obs, info = env.reset()
+    step = 0
+    prev_a = 0
+    prev_r = 0.0
+    while not done:
+        action, _states = model.predict(obs)
+        obs, reward, done, truncated, info = env.step(action)
+        episode_reward += reward
+    print("episode_reward = ", episode_reward)
+    env.render()
 
-# model = DQN.load(monitor_dir+"best_model.zip")
-#
-# episode_reward = 0
-# done = False
-# obs, info = env.reset()
-# step = 0
-# prev_a = 0
-# prev_r = 0.0
-# while not done:
-#     action, _states = model.predict(obs)
-#     obs, reward, done, truncated, info = env.step(action)
-#     episode_reward += reward
-# print("episode_reward = ", episode_reward)
-# env.render()
+if __name__ == '__main__':
+    #train()
+    ptest()
