@@ -31,8 +31,15 @@ tuner = tune.Tuner(
     "PPO",
     run_config=air.RunConfig(
         stop={"episode_reward_mean": 150},
+        checkpoint_config=air.CheckpointConfig(checkpoint_at_end=True),
     ),
     param_space=config,
+
 )
 
-tuner.fit()
+
+results = tuner.fit()
+
+ckpt = results.get_best_result(metric="episode_reward_mean", mode="max").checkpoint
+
+print(ckpt)

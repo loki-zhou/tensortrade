@@ -141,8 +141,8 @@ config={
     "log_level": "DEBUG",
     "framework": "torch",
     #"framework": "tf",
-    #"ignore_worker_failures": True,
-    "ignore_worker_failures": False,
+    "ignore_worker_failures": True,
+    #"ignore_worker_failures": False,
     "num_workers": 1,
     "num_gpus": 0,
     "clip_rewards": True,
@@ -165,7 +165,7 @@ config={
 
 stop = {
     #"episode_reward_min": 500,
-    "episode_reward_mean": 800,
+    "episode_reward_mean": 200,
 }
 def train():
     ray.init()
@@ -215,6 +215,34 @@ def train():
     #     env="TradingEnv",
     #     config=config
     # )
+
+def train2():
+    import ray
+    from ray import air, tune
+
+    ray.init()
+
+    config = PPOConfig().environment(env="TradingEnv", env_config = { "window_size": 25}).framework("torch").training(
+        lr= 0.0001,
+        gamma=0,
+    )
+
+    tuner = tune.Tuner(
+        "PPO",
+        run_config=air.RunConfig(
+            stop={"episode_reward_mean": 500},
+            checkpoint_config=air.CheckpointConfig(checkpoint_at_end=True),
+        ),
+        param_space=config,
+
+    )
+
+    results = tuner.fit()
+
+    ckpt = results.get_best_result(metric="episode_reward_mean", mode="max").checkpoint
+
+    print(ckpt)
+
 def runmode(checkpoint_path):
     ray.init()
     #checkpoint_path = r"C:\Users\loki_\ray_results\PPO\PPO_TradingEnv_47a49_00000_0_2023-03-19_08-59-19\checkpoint_000006"
@@ -227,15 +255,15 @@ def runmode(checkpoint_path):
 
     from ray.rllib.algorithms.algorithm import Algorithm
     agent = Algorithm.from_checkpoint(checkpoint_path)
-    import ray.rllib.algorithms.ppo as ppo
-    agent = ppo.PPO(env="TradingEnv", config=config)
-    agent.restore(checkpoint_path)
+    # import ray.rllib.algorithms.ppo as ppo
+    # agent = ppo.PPO(env="TradingEnv", config=config)
+    # agent.restore(checkpoint_path)
     print(f"Agent loaded from saved model at {checkpoint_path}")
 
     # inference
-    env = create_env({
-        "window_size": 25
-    })
+    # env = create_env({
+    #     "window_size": 25
+    # })
 
     #loaded_policy = agent.get_policy()
     #agent = Algorithm.from_checkpoint(best_checkpoint)
@@ -281,10 +309,10 @@ def runmode(checkpoint_path):
     ray.shutdown()
 
 
-#train()
-checkpoint_path = r"D:\rl\tensortrade\examples\saved_models\PPO\PPO_TradingEnv_bfbe5_00000_0_2023-03-20_16-11-00\checkpoint_000017"
+train2()
+checkpoint_path = r"C:\Users\zhouyi\ray_results\PPO\PPO_TradingEnv_bc99a_00000_0_2023-04-17_21-42-46\checkpoint_000004"
 # checkpoint_path = r"C:\Users\loki_\ray_results\PPO"
 # tuner = tune.Tuner.restore(checkpoint_path)
 # results = tuner.get_results()
 #pprint(results)
-runmode(checkpoint_path)
+#runmode(checkpoint_path)
