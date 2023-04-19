@@ -1,7 +1,7 @@
 import pytest
 import numpy as np
 import pandas as pd
-from gym.spaces import Box
+from gymnasium.spaces import Box
 from tensortrade.features.indicators.ta_indicator import TAIndicator
 
 

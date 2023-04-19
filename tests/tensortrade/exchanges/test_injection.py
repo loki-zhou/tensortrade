@@ -3,7 +3,7 @@ from typing import Generator, List, Dict
 import pandas as pd
 import tensortrade.slippage as slippage
 
-from gym import Space
+from gymnasium import Space
 
 from tensortrade import TradingContext
 from tensortrade.trades import Trade

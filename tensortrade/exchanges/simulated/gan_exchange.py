@@ -16,7 +16,7 @@ import tensorflow as tf
 import numpy as np
 import pandas as pd
 
-from gym import spaces
+from gymnasium import spaces
 from typing import Dict
 
 from tensortrade.trades import Trade, TradeType

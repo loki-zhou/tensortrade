@@ -15,7 +15,7 @@
 import pandas as pd
 import numpy as np
 
-from gym import Space
+from gymnasium import Space
 from copy import copy
 from typing import Union, List, Tuple
 

@@ -18,7 +18,7 @@ import numpy as np
 import pandas as pd
 
 from typing import Dict, List, Union
-from gym.spaces import Space, Box
+from gymnasium.spaces import Space, Box
 from ccxt import Exchange, BadRequest
 
 from tensortrade.trades import Trade, TradeType
@@ -50,14 +50,14 @@ class CCXTExchange(Exchange):
 
         self._markets = self._exchange.load_markets()
 
-        self._min_trade_amount = float(
-            self._markets[self._observation_symbol]['limits']['amount']['min'])
-        self._max_trade_amount = float(
-            self._markets[self._observation_symbol]['limits']['amount']['max'])
-        self._min_trade_price = float(
-            self._markets[self._observation_symbol]['limits']['price']['min'])
-        self._max_trade_price = float(
-            self._markets[self._observation_symbol]['limits']['price']['max'])
+        # self._min_trade_amount = float(
+        #     self._markets[self._observation_symbol]['limits']['amount']['min'])
+        # self._max_trade_amount = float(
+        #     self._markets[self._observation_symbol]['limits']['amount']['max'])
+        # self._min_trade_price = float(
+        #     self._markets[self._observation_symbol]['limits']['price']['min'])
+        # self._max_trade_price = float(
+        #     self._markets[self._observation_symbol]['limits']['price']['max'])
 
     @property
     def data_frame(self) -> pd.DataFrame:

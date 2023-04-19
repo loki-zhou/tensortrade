@@ -18,7 +18,7 @@
 import pandas as pd
 import numpy as np
 
-from gym import Space
+from gymnasium import Space
 from copy import copy
 from typing import Union, List, Tuple
 
@@ -80,6 +80,9 @@ class FractionalDifference(FeatureTransformer):
 
         for current_index in range(skip_weights, curr_series.shape[0]):
             index = curr_series.index[current_index]
+
+            # if type(curr_series.loc[index]) == str:
+            #     continue
 
             if not np.isfinite(curr_series.loc[index]):
                 continue

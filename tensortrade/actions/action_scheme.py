@@ -16,7 +16,7 @@ import numpy as np
 
 from typing import Union
 from abc import abstractmethod
-from gym.spaces import Space
+from gymnasium.spaces import Space
 
 from tensortrade import Component
 from tensortrade.trades import Trade

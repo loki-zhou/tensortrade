@@ -17,7 +17,7 @@ import numpy as np
 
 from abc import abstractmethod
 from typing import Dict, Union, List
-from gym.spaces import Box
+from gymnasium.spaces import Box
 
 from tensortrade import Component
 from tensortrade.trades import Trade

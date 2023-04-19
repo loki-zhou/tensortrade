@@ -1,6 +1,6 @@
 import pandas as pd
 
-from gym import Space
+from gymnasium import Space
 from typing import List
 from itertools import repeat
 

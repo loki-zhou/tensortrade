@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import gym
+import gymnasium as gym
 import logging
 import pandas as pd
 import numpy as np
@@ -21,7 +21,7 @@ import tensortrade.actions as actions
 import tensortrade.rewards as rewards
 import tensortrade.features as features
 
-from gym import spaces
+from gymnasium import spaces
 from typing import Union, Tuple, List
 
 from tensortrade.actions import ActionScheme, TradeActionUnion
@@ -173,7 +173,7 @@ class TradingEnvironment(gym.Env):
                 'executed_trade': executed_trade,
                 'filled_trade': filled_trade}
 
-    def step(self, action) -> Tuple[pd.DataFrame, float, bool, dict]:
+    def step(self, action):
         """Run one timestep within the environments based on the specified action.
 
         Arguments:
@@ -192,9 +192,10 @@ class TradingEnvironment(gym.Env):
         done = self._done()
         info = self._info(executed_trade, filled_trade)
 
-        return observation, reward, done, info
+        return observation, reward, done, False, info
 
-    def reset(self) -> pd.DataFrame:
+    #def reset(self) -> pd.DataFrame:
+    def reset(self, *, seed=None, options=None)->Tuple[np.array, dict]:
         """Resets the state of the environments and returns an initial observation.
 
         Returns:
@@ -206,7 +207,7 @@ class TradingEnvironment(gym.Env):
         self._reward_scheme.reset()
         self._exchange.reset()
 
-        return self._next_observation(Trade('N/A', 'hold', 0, 0))
+        return self._next_observation(Trade('N/A', 'hold', 0, 0)), {}
 
     def render(self, mode='none'):
         """Renders the environments."""

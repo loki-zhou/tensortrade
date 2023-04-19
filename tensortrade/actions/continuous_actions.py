@@ -15,7 +15,7 @@
 import numpy as np
 
 from typing import Union
-from gym.spaces import Box
+from gymnasium.spaces import Box
 
 from tensortrade.actions import ActionScheme, TradeActionUnion, DTypeString
 from tensortrade.trades import Trade, TradeType

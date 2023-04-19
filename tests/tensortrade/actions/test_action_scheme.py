@@ -1,6 +1,6 @@
 
 
-from gym.spaces import Discrete
+from gymnasium.spaces import Discrete
 
 from tensortrade import TradingContext
 from tensortrade.actions import ActionScheme, TradeActionUnion

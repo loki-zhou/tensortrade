@@ -16,7 +16,7 @@ import numpy as np
 import pandas as pd
 import tensortrade.slippage as slippage
 
-from gym.spaces import Space, Box
+from gymnasium.spaces import Space, Box
 from typing import List, Dict
 
 from tensortrade.trades import Trade, TradeType
@@ -113,7 +113,7 @@ class SimulatedExchange(Exchange):
         if self._feature_pipeline is not None:
             data_frame = self._feature_pipeline.transform(data_frame)
 
-        return data_frame.select_dtypes(include=[np.float, np.number]).columns
+        return data_frame.select_dtypes(include=[np.float32, np.number]).columns
 
     @property
     def has_next_observation(self) -> bool:

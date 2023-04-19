@@ -3,7 +3,7 @@ import numpy as np
 import pandas as pd
 import tensortrade.exchanges as exchanges
 
-from gym.spaces import Box
+from gymnasium.spaces import Box
 
 from tensortrade.features import FeatureTransformer
 from tensortrade.features.stationarity import FractionalDifference

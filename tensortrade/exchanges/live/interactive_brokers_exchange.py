@@ -17,7 +17,7 @@ import numpy as np
 import pandas as pd
 
 from typing import Dict, List
-from gym.spaces import Space, Box
+from gymnasium.spaces import Space, Box
 from ccxt import Exchange
 
 from tensortrade.trades import Trade, TradeType
