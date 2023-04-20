@@ -309,10 +309,15 @@ def runmode(checkpoint_path):
     ray.shutdown()
 
 
-train2()
-checkpoint_path = r"C:\Users\zhouyi\ray_results\PPO\PPO_TradingEnv_bc99a_00000_0_2023-04-17_21-42-46\checkpoint_000004"
+#train2()
+#checkpoint_path = r"C:\Users\zhouyi\ray_results\PPO\PPO_TradingEnv_bc99a_00000_0_2023-04-17_21-42-46\checkpoint_000004"
 # checkpoint_path = r"C:\Users\loki_\ray_results\PPO"
 # tuner = tune.Tuner.restore(checkpoint_path)
 # results = tuner.get_results()
 #pprint(results)
 #runmode(checkpoint_path)
+from gymnasium.utils.env_checker import check_env
+env = create_env({
+    "window_size": 25
+})
+check_env(env)
