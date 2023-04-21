@@ -200,7 +200,7 @@ class Exchange(Component):
             observation = observation.fillna(0, axis=1)
 
             return observation.values
-
+        observation = observation.astype(self.observation_space)
         return observation
 
     def instrument_balance(self, symbol: str) -> float:
