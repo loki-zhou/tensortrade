@@ -22,10 +22,11 @@ import numpy as np
 from abc import ABCMeta, abstractmethod
 from typing import Union, Callable, List, Dict
 
-from stable_baselines.common.vec_env import DummyVecEnv
-from stable_baselines.common.policies import BasePolicy
-from stable_baselines.common.base_class import BaseRLModel
-from stable_baselines import DQN
+from stable_baselines3.common.vec_env import DummyVecEnv
+from stable_baselines3.common.policies import BasePolicy
+from stable_baselines3.common.base_class import BaseAlgorithm as BaseRLModel
+from stable_baselines3 import PPO
+
 
 from tensortrade.environments.trading_environment import TradingEnvironment
 from tensortrade.strategies import TradingStrategy
@@ -46,7 +47,7 @@ class StableBaselinesTradingStrategy(TradingStrategy):
 
     def __init__(self,
                  environment: TradingEnvironment,
-                 model: BaseRLModel = DQN,
+                 model: BaseRLModel = PPO,
                  policy: Union[str, BasePolicy] = 'MlpPolicy',
                  model_kwargs: any = {},
                  **kwargs):
@@ -63,7 +64,8 @@ class StableBaselinesTradingStrategy(TradingStrategy):
 
     @environment.setter
     def environment(self, environment: 'TradingEnvironment'):
-        self._environment = DummyVecEnv([lambda: environment])
+        self._environment = environment
+        # self._environment = DummyVecEnv([lambda: environment])
 
     def restore_agent(self, path: str):
         """Deserialize the strategy's learning agent from a file.
@@ -93,22 +95,23 @@ class StableBaselinesTradingStrategy(TradingStrategy):
         episodes_completed = 0
         average_reward = 0
 
-        obs, state, dones = self._environment.reset(), None, [False]
+        test = self._environment.reset()
+        obs, info = self._environment.reset()
 
         performance = {}
 
         while (steps is not None and (steps == 0 or steps_completed < steps)) or (episodes is not None and episodes_completed < episodes):
-            actions, state = self._agent.predict(obs, state=state, mask=dones)
-            obs, rewards, dones, info = self._environment.step(actions)
+            actions, state = self._agent.predict(obs)
+            obs, rewards, dones, truncated, info = self._environment.step(actions)
 
             steps_completed += 1
             average_reward -= average_reward / steps_completed
-            average_reward += rewards[0] / (steps_completed + 1)
+            average_reward += rewards/ (steps_completed + 1)
 
-            exchange_performance = info[0].get('exchange').performance
+            exchange_performance = info.get('exchange').performance
             performance = exchange_performance if len(exchange_performance) > 0 else performance
 
-            if dones[0]:
+            if dones:
                 if episode_callback is not None and episode_callback(self._environment._exchange.performance):
                     break
 

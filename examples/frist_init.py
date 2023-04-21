@@ -5,8 +5,10 @@ from tensortrade.features import FeaturePipeline
 from tensortrade.features.scalers import MinMaxNormalizer
 from tensortrade.features.stationarity import FractionalDifference
 from tensortrade.rewards import SimpleProfit
-
+from tensortrade.actions import DiscreteActions
 from gymnasium.utils.env_checker import check_env
+from tensortrade.strategies import StableBaselinesTradingStrategy
+from tensortrade.environments import TradingEnvironment
 
 df = pd.read_csv('data/Coinbase_BTCUSD_1h.csv', skiprows=1)
 exchange = SimulatedExchange(data_frame=df, base_instrument='USD', pretransform=True)
@@ -23,7 +25,7 @@ exchange.feature_pipeline = feature_pipeline
 
 action_scheme = DiscreteActions(n_actions=20, instrument='BTC')
 reward_scheme = SimpleProfit()
-from tensortrade.environments import TradingEnvironment
+
 
 environment = TradingEnvironment(exchange=exchange,
                                  feature_pipeline=feature_pipeline,
@@ -31,4 +33,29 @@ environment = TradingEnvironment(exchange=exchange,
                                  reward_scheme=reward_scheme)
 
 
-check_env(environment)
+
+
+action_scheme = DiscreteActions(n_actions=20, instrument='BTC')
+reward_scheme = SimpleProfit()
+
+from tensortrade.environments import TradingEnvironment
+
+environment = TradingEnvironment(exchange=exchange,
+                                 feature_pipeline=feature_pipeline,
+                                 action_scheme=action_scheme,
+                                 reward_scheme=reward_scheme)
+
+from stable_baselines3 import PPO
+
+model = PPO
+policy = "MlpPolicy"
+params = { "learning_rate": 1e-5, 'batch_size': 64 }
+
+
+
+strategy = StableBaselinesTradingStrategy(environment=environment,
+                                          model=model,
+                                          policy=policy,
+                                          model_kwargs=params)
+
+performance = strategy.run(steps=10000)
