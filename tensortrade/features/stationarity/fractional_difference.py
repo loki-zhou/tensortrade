@@ -96,7 +96,10 @@ class FractionalDifference(FeatureTransformer):
         if self._history is None:
             self._history = X.copy()
         else:
-            self._history = self._history.append(X, ignore_index=True)
+            # self._history = self._history.append(X, ignore_index=True)
+            self._history = pd.concat([self._history, X],  ignore_index=True)
+
+
 
         if len(self._history) > len(X):
             self._history = self._history.iloc[-len(X) + 1:]

@@ -136,6 +136,7 @@ class SimulatedExchange(Exchange):
         obs = obs.select_dtypes(include='number')
 
         self._current_step += 1
+        print(self._current_step, ", = ", obs)
 
         return obs
 
@@ -159,13 +160,20 @@ class SimulatedExchange(Exchange):
 
     def _update_account(self, trade: Trade):
         if self._is_valid_trade(trade) and not trade.is_hold:
-            self._trades = self._trades.append({
+            # self._trades = self._trades.append({
+            #     'step': self._current_step,
+            #     'symbol': trade.symbol,
+            #     'type': trade.trade_type,
+            #     'amount': trade.amount,
+            #     'price': trade.price
+            # }, ignore_index=True)
+            self._trades = pd.concat([self._trades, pd.DataFrame([{
                 'step': self._current_step,
                 'symbol': trade.symbol,
                 'type': trade.trade_type,
                 'amount': trade.amount,
                 'price': trade.price
-            }, ignore_index=True)
+            }])], ignore_index=True)
 
         if trade.is_buy:
             self._balance -= trade.amount * trade.price
@@ -176,10 +184,10 @@ class SimulatedExchange(Exchange):
 
         self._portfolio[self._base_instrument] = self._balance
 
-        self._performance = self._performance.append({
+        self._performance = pd.concat([self._performance, pd.DataFrame([{
             'balance': self.balance,
             'net_worth': self.net_worth,
-        }, ignore_index=True)
+        }])], ignore_index=True)
 
     def execute_trade(self, trade: Trade) -> Trade:
         current_price = self.current_price(symbol=trade.symbol)
