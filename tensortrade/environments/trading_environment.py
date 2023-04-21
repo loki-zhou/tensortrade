@@ -201,6 +201,7 @@ class TradingEnvironment(gym.Env):
         Returns:
             observation: the initial observation.
         """
+        super().reset(seed=seed)
         self._current_step = 0
 
         self._action_scheme.reset()
