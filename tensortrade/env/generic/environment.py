@@ -164,10 +164,10 @@ class TradingEnv(gym.Env, TimeIndexed):
                     c.reset()
 
         obs = self.observer.observe(self)
-
+        info = self.informer.info(self)
         self.clock.increment()
 
-        return obs, {}
+        return obs, info
 
     def render(self, **kwargs) -> None:
         """Renders the environment."""
