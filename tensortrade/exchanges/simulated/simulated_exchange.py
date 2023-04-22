@@ -136,7 +136,6 @@ class SimulatedExchange(Exchange):
         obs = obs.select_dtypes(include='number')
 
         self._current_step += 1
-        print(self._current_step, ", = ", obs)
 
         return obs
 

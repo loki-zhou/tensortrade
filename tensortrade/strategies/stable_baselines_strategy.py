@@ -114,9 +114,9 @@ class StableBaselinesTradingStrategy(TradingStrategy):
             if dones:
                 if episode_callback is not None and episode_callback(self._environment._exchange.performance):
                     break
-
+                print("frist done")
                 episodes_completed += 1
-                obs = self._environment.reset()
+                obs, info = self._environment.reset()
 
         print("Finished running strategy.")
         print("Total episodes: {} ({} timesteps).".format(episodes_completed, steps_completed))
