@@ -57,5 +57,7 @@ strategy = StableBaselinesTradingStrategy(environment=environment,
                                           model=model,
                                           policy=policy,
                                           model_kwargs=params)
+strategy.simple_learn(total_timesteps=100_000)
 
-performance = strategy.run(steps=10000)
+performance = strategy.run(steps=10000, episodes=1)
+performance.net_worth.plot()

@@ -81,7 +81,11 @@ class StableBaselinesTradingStrategy(TradingStrategy):
         Arguments:
             path: The `str` path of the file to store the agent specification in.
         """
+        os.makedirs(path, exist_ok=True)
         self._agent.save(path)
+
+    def simple_learn(self, total_timesteps=500_000,verbose = 1):
+        self._agent.learn(total_timesteps=total_timesteps, verbose=verbose,)
 
     def tune(self, steps: int = None, episodes: int = None, callback: Callable[[pd.DataFrame], bool] = None) -> pd.DataFrame:
         raise NotImplementedError
