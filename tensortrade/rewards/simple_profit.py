@@ -46,6 +46,8 @@ class SimpleProfit(RewardScheme):
             self._is_holding_instrument = False
             profit_per_instrument = trade.price - self._purchase_price
             profit = trade.amount * profit_per_instrument
+            if profit == 0:
+                return 0
             profit_sign = np.sign(profit)
 
             return profit_sign * (1 + (5 ** np.log10(abs(profit))))

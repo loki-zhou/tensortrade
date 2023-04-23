@@ -148,3 +148,4 @@ class StableBaselinesTradingStrategy(TradingStrategy):
         print("Finished running strategy.")
         print("Total ({} timesteps).".format(steps_completed))
         print("Average reward: {}.".format(average_reward))
+        return performance
