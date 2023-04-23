@@ -15,21 +15,21 @@ df = pd.read_csv('data/Coinbase_BTCUSD_1h.csv', skiprows=1)
 exchange = SimulatedExchange(data_frame=df, base_instrument='USD', pretransform=True, window_size=20)
 # exchange = SimulatedExchange(data_frame=df, base_instrument='USD', pretransform=True)
 
-normalize_price = MinMaxNormalizer(["open", "high", "low", "close"], inplace=False)
-difference_all = FractionalDifference(["open", "high", "low", "close"], difference_order=0.6, inplace=False)
-moving_averages = SimpleMovingAverage(["open", "high", "low", "close"], inplace=False)
-feature_pipeline = FeaturePipeline(steps=[normalize_price, moving_averages, difference_all])
+# normalize_price = MinMaxNormalizer(["open", "high", "low", "close"], inplace=False)
+# difference_all = FractionalDifference(["open", "high", "low", "close"], difference_order=0.6, inplace=False)
+# moving_averages = SimpleMovingAverage(["open", "high", "low", "close"], inplace=False)
+# feature_pipeline = FeaturePipeline(steps=[normalize_price, moving_averages, difference_all])
 
-# normalize_price = MinMaxNormalizer(["open", "high", "low", "close"])
-# difference_all = FractionalDifference(["open", "high", "low", "close"], difference_order=0.6)
-# feature_pipeline = FeaturePipeline(steps=[normalize_price,  difference_all])
+normalize_price = MinMaxNormalizer(["open", "high", "low", "close"])
+difference_all = FractionalDifference(["open", "high", "low", "close"], difference_order=0.6)
+feature_pipeline = FeaturePipeline(steps=[normalize_price,  difference_all])
 
 #exchange.feature_pipeline = feature_pipeline
 
 
 
 
-action_scheme = DiscreteActions(n_actions=20, instrument='BTC')
+action_scheme = DiscreteActions(n_actions=5, instrument='BTC')
 
 # reward_scheme = SimpleProfit()
 reward_scheme = RiskAdjustedReturns()
@@ -46,7 +46,7 @@ from stable_baselines3 import PPO
 
 model = PPO
 policy = "MlpPolicy"
-params = { "learning_rate": 1e-5, 'batch_size': 64, 'verbose': 1 }
+params = { "learning_rate": 1e-3, 'batch_size': 256, 'verbose': 1, 'policy_kwargs':{'net_arch': [128, 128]}}
 
 
 
