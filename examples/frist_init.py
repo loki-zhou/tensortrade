@@ -12,8 +12,8 @@ from tensortrade.environments import TradingEnvironment
 
 
 df = pd.read_csv('data/Coinbase_BTCUSD_1h.csv', skiprows=1)
-#exchange = SimulatedExchange(data_frame=df, base_instrument='USD', pretransform=True, window_size=20)
-exchange = SimulatedExchange(data_frame=df, base_instrument='USD', pretransform=True)
+exchange = SimulatedExchange(data_frame=df, base_instrument='USD', pretransform=True, window_size=20)
+# exchange = SimulatedExchange(data_frame=df, base_instrument='USD', pretransform=True)
 
 normalize_price = MinMaxNormalizer(["open", "high", "low", "close"], inplace=False)
 difference_all = FractionalDifference(["open", "high", "low", "close"], difference_order=0.6, inplace=False)
@@ -55,9 +55,9 @@ strategy = StableBaselinesTradingStrategy(environment=environment,
                                           policy=policy,
                                           model_kwargs=params)
 if 1:
-    # strategy.simple_learn(total_timesteps=500_000)
-    # strategy.save_agent(path="agents/ppo_btc_1h")
-    strategy.run(steps=10000)
+    strategy.simple_learn(total_timesteps=500_000)
+    strategy.save_agent(path="agents/ppo_btc_1h")
+    # strategy.run(steps=10000)
 else:
     strategy.restore_agent(path="agents/ppo_btc_1h")
     performance = strategy.backtesting()

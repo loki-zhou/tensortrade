@@ -47,6 +47,7 @@ class SimulatedExchange(Exchange):
         self._pretransform = self.default('pretransform', True, kwargs)
 
         self.data_frame = self.default('data_frame', data_frame)
+        self.data_frame = self.data_frame.sort_index(ascending=False)
 
         model = self.default('slippage_model', 'uniform', kwargs)
         self._slippage_model = slippage.get(model) if isinstance(model, str) else model()
@@ -132,7 +133,8 @@ class SimulatedExchange(Exchange):
             padding = np.zeros((self._window_size - len(obs), len(self.observation_columns)))
             padding = pd.DataFrame(padding, columns=self.observation_columns)
             obs = pd.concat([padding, obs], ignore_index=True)
-
+        else:
+            obs = obs[-self._window_size:]
         obs = obs.select_dtypes(include='number')
 
         self._current_step += 1

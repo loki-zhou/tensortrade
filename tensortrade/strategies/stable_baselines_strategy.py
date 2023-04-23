@@ -108,6 +108,8 @@ class StableBaselinesTradingStrategy(TradingStrategy):
             obs, rewards, dones, truncated, info = self._environment.step(actions)
 
             steps_completed += 1
+            if steps_completed == 19:
+                debug = 1
             average_reward -= average_reward / steps_completed
             average_reward += rewards/ (steps_completed + 1)
 
