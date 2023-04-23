@@ -131,12 +131,13 @@ class StableBaselinesTradingStrategy(TradingStrategy):
         performance = {}
         steps_completed = 0
         average_reward = 0
+        all_reward = 0
         obs, info = self._environment.reset()
         dones = False
         while not dones:
             actions, state = self._agent.predict(obs)
             obs, rewards, dones, truncated, info = self._environment.step(actions)
-
+            all_reward += rewards
             steps_completed += 1
             average_reward -= average_reward / steps_completed
             average_reward += rewards/ (steps_completed + 1)
@@ -148,4 +149,5 @@ class StableBaselinesTradingStrategy(TradingStrategy):
         print("Finished running strategy.")
         print("Total ({} timesteps).".format(steps_completed))
         print("Average reward: {}.".format(average_reward))
+        print("All reward: {}.".format(all_reward))
         return performance

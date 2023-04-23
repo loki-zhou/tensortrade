@@ -76,6 +76,7 @@ class FractionalDifference(FeatureTransformer):
         skip_weights = len(weight_sums[weight_sums > self._difference_threshold])
 
         curr_series = series.dropna()
+        #diff_series = pd.Series(index=series.index, dtype='float64')
         diff_series = pd.Series(index=series.index, dtype='float64')
 
         for current_index in range(skip_weights, curr_series.shape[0]):
