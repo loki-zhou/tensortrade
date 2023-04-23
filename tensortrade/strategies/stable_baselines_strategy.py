@@ -73,7 +73,7 @@ class StableBaselinesTradingStrategy(TradingStrategy):
         Arguments:
             path: The `str` path of the file the agent specification is stored in.
         """
-        self._agent = self._model.load(path, self._environment, self._model_kwargs)
+        self._agent = self._model.load(path)
 
     def save_agent(self, path: str):
         """Serialize the learning agent to a file for restoring later.
@@ -81,11 +81,11 @@ class StableBaselinesTradingStrategy(TradingStrategy):
         Arguments:
             path: The `str` path of the file to store the agent specification in.
         """
-        os.makedirs(path, exist_ok=True)
+        #os.makedirs(path, exist_ok=True)
         self._agent.save(path)
 
-    def simple_learn(self, total_timesteps=500_000,verbose = 1):
-        self._agent.learn(total_timesteps=total_timesteps, verbose=verbose,)
+    def simple_learn(self, total_timesteps=500_000):
+        self._agent.learn(total_timesteps=total_timesteps)
 
     def tune(self, steps: int = None, episodes: int = None, callback: Callable[[pd.DataFrame], bool] = None) -> pd.DataFrame:
         raise NotImplementedError
@@ -99,7 +99,6 @@ class StableBaselinesTradingStrategy(TradingStrategy):
         episodes_completed = 0
         average_reward = 0
 
-        test = self._environment.reset()
         obs, info = self._environment.reset()
 
         performance = {}
@@ -127,3 +126,25 @@ class StableBaselinesTradingStrategy(TradingStrategy):
         print("Average reward: {}.".format(average_reward))
 
         return performance
+
+    def backtesting(self):
+        performance = {}
+        steps_completed = 0
+        average_reward = 0
+        obs, info = self._environment.reset()
+        dones = False
+        while not dones:
+            actions, state = self._agent.predict(obs)
+            obs, rewards, dones, truncated, info = self._environment.step(actions)
+
+            steps_completed += 1
+            average_reward -= average_reward / steps_completed
+            average_reward += rewards/ (steps_completed + 1)
+
+            exchange_performance = info.get('exchange').performance
+            performance = exchange_performance if len(exchange_performance) > 0 else performance
+
+
+        print("Finished running strategy.")
+        print("Total ({} timesteps).".format(steps_completed))
+        print("Average reward: {}.".format(average_reward))

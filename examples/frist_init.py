@@ -49,7 +49,7 @@ from stable_baselines3 import PPO
 
 model = PPO
 policy = "MlpPolicy"
-params = { "learning_rate": 1e-5, 'batch_size': 64 }
+params = { "learning_rate": 1e-5, 'batch_size': 64, 'verbose': 1 }
 
 
 
@@ -57,7 +57,15 @@ strategy = StableBaselinesTradingStrategy(environment=environment,
                                           model=model,
                                           policy=policy,
                                           model_kwargs=params)
-strategy.simple_learn(total_timesteps=100_000)
+if 0:
+    strategy.simple_learn(total_timesteps=10_000)
+    strategy.save_agent(path="agents/ppo_btc_1h")
+else:
+    agent = PPO.load("agents/ppo_btc_1h")
+    strategy.restore_agent(path="agents/ppo_btc_1h")
+    performance = strategy.backtesting()
+    performance.net_worth.plot()
 
-performance = strategy.run(steps=10000, episodes=1)
-performance.net_worth.plot()
+
+# performance = strategy.run(steps=10000, episodes=1)
+# performance.net_worth.plot()
