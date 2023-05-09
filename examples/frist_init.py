@@ -12,27 +12,28 @@ from tensortrade.environments import TradingEnvironment
 
 
 df = pd.read_csv('data/Coinbase_BTCUSD_1h.csv', skiprows=1)
-exchange = SimulatedExchange(data_frame=df, base_instrument='USD', pretransform=True, window_size=20)
+exchange = SimulatedExchange(data_frame=df, base_instrument='USD', pretransform=True, window_size=1)
 # exchange = SimulatedExchange(data_frame=df, base_instrument='USD', pretransform=True)
 
-# normalize_price = MinMaxNormalizer(["open", "high", "low", "close"], inplace=False)
-# difference_all = FractionalDifference(["open", "high", "low", "close"], difference_order=0.6, inplace=False)
-# moving_averages = SimpleMovingAverage(["open", "high", "low", "close"], inplace=False)
-# feature_pipeline = FeaturePipeline(steps=[normalize_price, moving_averages, difference_all])
+normalize_price = MinMaxNormalizer(["open", "high", "low", "close"], inplace=False)
+difference_all = FractionalDifference(["open", "high", "low", "close"], difference_order=0.6, inplace=False)
+moving_averages = SimpleMovingAverage(["close"], inplace=False)
+feature_pipeline = FeaturePipeline(steps=[normalize_price, moving_averages, difference_all])
 
-normalize_price = MinMaxNormalizer(["open", "high", "low", "close"])
-difference_all = FractionalDifference(["open", "high", "low", "close"], difference_order=0.6)
-feature_pipeline = FeaturePipeline(steps=[normalize_price,  difference_all])
+# normalize_price = MinMaxNormalizer(["open", "high", "low", "close"])
+# difference_all = FractionalDifference(["open", "high", "low", "close"], difference_order=0.6)
+# feature_pipeline = FeaturePipeline(steps=[normalize_price,  difference_all])
 
 #exchange.feature_pipeline = feature_pipeline
 
 
+# pip install git+https://github.com/DLR-RM/stable-baselines3@feat/gymnasium-support
+# pip install git+https://github.com/Stable-Baselines-Team/stable-baselines3-contrib@feat/gymnasium-support
 
-
-action_scheme = DiscreteActions(n_actions=5, instrument='BTC')
+action_scheme = DiscreteActions(n_actions=20, instrument='BTC')
 
 # reward_scheme = SimpleProfit()
-reward_scheme = RiskAdjustedReturns()
+reward_scheme = RiskAdjustedReturns(return_algorithm='sortino')
 
 
 from tensortrade.environments import TradingEnvironment
@@ -43,9 +44,12 @@ environment = TradingEnvironment(exchange=exchange,
                                  reward_scheme=reward_scheme)
 
 from stable_baselines3 import PPO
+from sb3_contrib import RecurrentPPO
 
 model = PPO
 policy = "MlpPolicy"
+#model = RecurrentPPO
+#policy = "MlpLstmPolicy"
 params = { "learning_rate": 1e-3, 'batch_size': 256, 'verbose': 1, 'policy_kwargs':{'net_arch': [128, 128]}}
 
 

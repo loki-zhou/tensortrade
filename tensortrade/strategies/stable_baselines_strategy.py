@@ -85,7 +85,7 @@ class StableBaselinesTradingStrategy(TradingStrategy):
         self._agent.save(path)
 
     def simple_learn(self, total_timesteps=500_000):
-        self._agent.learn(total_timesteps=total_timesteps)
+        self._agent.learn(total_timesteps=total_timesteps, progress_bar=True)
 
     def tune(self, steps: int = None, episodes: int = None, callback: Callable[[pd.DataFrame], bool] = None) -> pd.DataFrame:
         raise NotImplementedError
