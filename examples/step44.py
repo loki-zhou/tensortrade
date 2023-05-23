@@ -170,6 +170,7 @@ def ptest():
         action, _states = model.predict(obs)
         obs, reward, done, truncated, info = env.step(action)
         episode_reward += reward
+        print("action = ", action)
     print("episode_reward = ", episode_reward)
     env.render()
 
