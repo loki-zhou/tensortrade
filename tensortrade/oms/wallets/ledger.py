@@ -25,12 +25,13 @@ class Ledger:
     def __init__(self):
         self.transactions: 'List[Transaction]' = []
 
-    def commit(self,
-               wallet: 'Wallet',
-               quantity: 'Quantity',
-               source: str,
-               target: str,
-               memo: str) -> None:
+    def commit(
+        self,
+        wallet: 'Wallet',
+        quantity: 'Quantity',
+        source: str,
+        target: str,
+        memo: str) -> None:
         """Commits a transaction to the ledger records.
 
         Parameters
@@ -64,7 +65,8 @@ class Ledger:
         self.transactions += [transaction]
 
     def as_frame(self, sort_by_order_seq: bool = False) -> 'pd.DataFrame':
-        """Converts the ledger records into a data frame.
+        """
+        Converts the ledger records into a data frame.
 
         Parameters
         ----------

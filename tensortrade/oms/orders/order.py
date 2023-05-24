@@ -21,7 +21,7 @@ from decimal import Decimal
 
 from tensortrade.core import TimedIdentifiable, Observable
 from tensortrade.core.exceptions import InvalidOrderQuantity
-from tensortrade.oms.instruments import Quantity, ExchangePair
+from tensortrade.oms.instruments import Quantity, ExchangePair, NegativeQuantity
 from tensortrade.oms.orders import Trade, TradeSide, TradeType
 
 
@@ -45,13 +45,12 @@ class Order(TimedIdentifiable, Observable):
         1. Confirming its own validity.
         2. Tracking its trades and reporting it back to the broker.
         3. Managing movement of quantities from order to order.
-        4. Generating the next order in its path given that there is a
-           'OrderSpec' for how to make the next order.
+        4. Generating the next order in its path given that there is a 'OrderSpec' for how to make the next order.
         5. Managing its own state changes when it can.
 
     Parameters
     ----------
-     side : `TradeSide`
+    side : `TradeSide`
         The side of the order.
     exchange_pair : `ExchangePair`
         The exchange pair to perform the order for.
@@ -80,18 +79,19 @@ class Order(TimedIdentifiable, Observable):
         Raised if the given quantity has a size of 0.
     """
 
-    def __init__(self,
-                 step: int,
-                 side: TradeSide,
-                 trade_type: TradeType,
-                 exchange_pair: 'ExchangePair',
-                 quantity: 'Quantity',
-                 portfolio: 'Portfolio',
-                 price: float,
-                 criteria: 'Callable[[Order, Exchange], bool]' = None,
-                 path_id: str = None,
-                 start: int = None,
-                 end: int = None):
+    def __init__(
+        self,
+        step: int,
+        side: TradeSide,
+        trade_type: TradeType,
+        exchange_pair: 'ExchangePair',
+        quantity: 'Quantity',
+        portfolio: 'Portfolio',
+        price: float,
+        criteria: 'Callable[[Order, Exchange], bool]' = None,
+        path_id: str = None,
+        start: int = None,
+        end: int = None):
         super().__init__()
         Observable.__init__(self)
 

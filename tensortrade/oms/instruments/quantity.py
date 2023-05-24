@@ -1,16 +1,3 @@
-# Copyright 2019 The TensorTrade Authors.
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License
 
 import operator
 
@@ -50,8 +37,13 @@ class Quantity:
         Raised if the `size` of the quantity being created is negative.
     """
 
-    def __init__(self, instrument: 'Instrument', size: Decimal, path_id: str = None):
-        if size < 0:
+    def __init__(
+        self,
+        instrument: 'Instrument',
+        size: Decimal,
+        path_id: str = None,
+        allow_negative=False):
+        if size < 0 and not allow_negative:
             if abs(size) > Decimal(10)**(-instrument.precision):
                 raise InvalidNegativeQuantity(float(size))
             else:
@@ -60,6 +52,7 @@ class Quantity:
         self.instrument = instrument
         self.size = size if isinstance(size, Decimal) else Decimal(size)
         self.path_id = path_id
+        self.allow_negative = allow_negative
 
     @property
     def is_locked(self) -> bool:
@@ -79,7 +72,10 @@ class Quantity:
         `Quantity`
             A locked quantity for an order path.
         """
-        return Quantity(self.instrument, self.size, path_id)
+        return Quantity(
+            self.instrument, 
+            self.size, path_id, 
+            self.allow_negative)
 
     def convert(self, exchange_pair: "ExchangePair") -> "Quantity":
         """Converts the quantity into the value of another instrument based
@@ -102,7 +98,11 @@ class Quantity:
         else:
             instrument = exchange_pair.pair.base
             converted_size = self.size * exchange_pair.price
-        return Quantity(instrument, converted_size, self.path_id)
+        return Quantity(
+            instrument, 
+            converted_size, 
+            self.path_id, 
+            self.allow_negative)
 
     def free(self) -> "Quantity":
         """Gets the free version of this quantity.
@@ -124,8 +124,10 @@ class Quantity:
             The quantized quantity.
         """
         return Quantity(self.instrument,
-                        self.size.quantize(Decimal(10)**-self.instrument.precision),
-                        self.path_id)
+                        self.size.quantize(
+                            Decimal(10)**-self.instrument.precision),
+                        self.path_id,
+                        self.allow_negative)
 
     def as_float(self) -> float:
         """Gets the size as a `float`.
@@ -157,20 +159,34 @@ class Quantity:
 
         if exchange_pair.pair.base == self.instrument:
             size = self.size
-            return Quantity(self.instrument, min(size, options.max_trade_size), self.path_id)
+            return Quantity(
+                self.instrument, 
+                min(size, options.max_trade_size), 
+                self.path_id, 
+                self.allow_negative)
 
         size = self.size * price
-        if size < options.max_trade_size:
-            return Quantity(self.instrument, self.size, self.path_id)
+        if abs(size) < options.max_trade_size:
+            return Quantity(
+                self.instrument, 
+                self.size, 
+                self.path_id, 
+                self.allow_negative)
 
         max_trade_size = Decimal(options.max_trade_size)
         contained_size = max_trade_size / price
-        contained_size = contained_size.quantize(Decimal(10)**-self.instrument.precision, rounding=ROUND_DOWN)
-        return Quantity(self.instrument, contained_size, self.path_id)
+        contained_size = contained_size.quantize(
+            Decimal(10)**-self.instrument.precision, rounding=ROUND_DOWN)
+
+        return Quantity(
+            self.instrument, 
+            contained_size, 
+            self.path_id, 
+            self.allow_negative)
 
     @staticmethod
     def validate(left: "Union[Quantity, Number]",
-                 right: "Union[Quantity, Number]") -> "Tuple[Quantity, Quantity]":
+                right: "Union[Quantity, Number]") -> "Tuple[Quantity, Quantity]":
         """Validates the given left and right arguments of a numeric or boolean
         operation.
 
@@ -216,11 +232,19 @@ class Quantity:
             return left, right
 
         elif isinstance(left, Number) and isinstance(right, Quantity):
-            left = Quantity(right.instrument, left, right.path_id)
+            left = Quantity(
+                right.instrument, 
+                left, 
+                right.path_id, 
+                right.allow_negative)
             return left, right
 
         elif isinstance(left, Quantity) and isinstance(right, Number):
-            right = Quantity(left.instrument, right, left.path_id)
+            right = Quantity(
+                left.instrument, 
+                right, 
+                left.path_id, 
+                left.allow_negative)
             return left, right
 
         elif isinstance(left, Quantity):
@@ -233,8 +257,8 @@ class Quantity:
 
     @staticmethod
     def _bool_op(left: "Union[Quantity, Number]",
-                 right: "Union[Quantity,Number]",
-                 op: "Callable[[T, T], bool]") -> bool:
+                right: "Union[Quantity,Number]",
+                op: "Callable[[T, T], bool]") -> bool:
         """Performs a generic boolean operation on two quantities.
 
         Parameters
@@ -257,8 +281,8 @@ class Quantity:
 
     @staticmethod
     def _math_op(left: "Union[Quantity, Number]",
-                 right: "Union[Quantity, Number]",
-                 op: "Callable[[T, T], T]") -> "Quantity":
+                right: "Union[Quantity, Number]",
+                op: "Callable[[T, T], T]") -> "Quantity":
         """Performs a generic numeric operation on two quantities.
 
         Parameters
@@ -277,7 +301,7 @@ class Quantity:
         """
         left, right = Quantity.validate(left, right)
         size = op(left.size, right.size)
-        return Quantity(left.instrument, size, left.path_id)
+        return Quantity(left.instrument, size, left.path_id, left.allow_negative)
 
     def __add__(self, other: "Quantity") -> "Quantity":
         return Quantity._math_op(self, other, operator.add)
@@ -319,3 +343,15 @@ class Quantity:
 
 
 
+@total_ordering
+class NegativeQuantity(Quantity):
+    def __init__(
+        self,
+        instrument: 'Instrument',
+        size: Union[Decimal, Number],
+        path_id: str = None):
+
+        super().__init__(instrument, size, path_id, True)
+        
+    def to_positive_quantity(self):
+        return Quantity(self.instrument, self.size, self.path_id, False)

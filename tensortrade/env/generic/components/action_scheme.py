@@ -1,21 +1,7 @@
-# Copyright 2020 The TensorTrade Authors.
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License
 
 from abc import abstractmethod, ABCMeta
 from typing import Any
-
-#from gym.spaces import Space
+from enum import Enum
 from gymnasium.spaces import Space
 
 
@@ -53,3 +39,24 @@ class ActionScheme(Component, TimeIndexed, metaclass=ABCMeta):
     def reset(self) -> None:
         """Resets the action scheme."""
         pass
+
+
+class BaseActions(Enum):
+    """
+    Default action space, mostly used for type handling.
+    """
+    Neutral = 0
+    Long_enter = 1
+    Long_exit = 2
+    Short_enter = 3
+    Short_exit = 4
+
+
+class Positions(Enum):
+    Short = 0
+    Long = 1
+    Neutral = 0.5
+
+    def opposite(self):
+        return Positions.Short if self == Positions.Long else Positions.Long
+

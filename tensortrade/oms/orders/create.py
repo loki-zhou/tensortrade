@@ -18,12 +18,14 @@ from tensortrade.oms.orders import Order, OrderSpec, TradeSide, TradeType
 from tensortrade.oms.orders.criteria import Stop, Limit
 
 
-def market_order(side: "TradeSide",
-                 exchange_pair: "ExchangePair",
-                 price: float,
-                 size: float,
-                 portfolio: "Portfolio") -> "Order":
-    """Creates a market order.
+def market_order(
+    side: "TradeSide",
+    exchange_pair: "ExchangePair",
+    price: float,
+    size: float,
+    portfolio: "Portfolio") -> "Order":
+    """
+    Creates a market order.
 
     Parameters
     ----------
@@ -58,14 +60,17 @@ def market_order(side: "TradeSide",
     return order
 
 
-def limit_order(side: "TradeSide",
-                exchange_pair: "ExchangePair",
-                limit_price: float,
-                size: float,
-                portfolio: 'Portfolio',
-                start: int = None,
-                end: int = None):
-    """Creates a limit order.
+def limit_order(
+    side: "TradeSide",
+    exchange_pair: "ExchangePair",
+    limit_price: float,
+    size: float,
+    portfolio: 'Portfolio',
+    start: int = None,
+    end: int = None):
+
+    """
+    Creates a limit order.
 
     Parameters
     ----------
@@ -107,14 +112,17 @@ def limit_order(side: "TradeSide",
     return order
 
 
-def hidden_limit_order(side: "TradeSide",
-                       exchange_pair: "ExchangePair",
-                       limit_price: float,
-                       size: float,
-                       portfolio: "Portfolio",
-                       start: int = None,
-                       end: int = None):
-    """Creates a hidden limit order.
+def hidden_limit_order(
+    side: "TradeSide",
+    exchange_pair: "ExchangePair",
+    limit_price: float,
+    size: float,
+    portfolio: "Portfolio",
+    start: int = None,
+    end: int = None):
+    
+    """
+    Creates a hidden limit order.
 
     Parameters
     ----------
@@ -157,17 +165,21 @@ def hidden_limit_order(side: "TradeSide",
     return order
 
 
-def risk_managed_order(side: "TradeSide",
-                       trade_type: "TradeType",
-                       exchange_pair: "ExchangePair",
-                       price: float,
-                       quantity: "Quantity",
-                       down_percent: float,
-                       up_percent: float,
-                       portfolio: "Portfolio",
-                       start: int = None,
-                       end: int = None):
-    """Create a stop order that manages for percentages above and below the
+def risk_managed_order(
+    side: "TradeSide",
+    trade_type: "TradeType",
+    exchange_pair: "ExchangePair",
+    price: float,
+    quantity: "Quantity",
+    down_percent: float,
+    up_percent: float,
+    portfolio: "Portfolio",
+    start: int = None,
+    end: int = None):
+    
+    """
+    
+    Create a stop order that manages for percentages above and below the
     entry price of the order.
 
     Parameters
@@ -228,10 +240,11 @@ def risk_managed_order(side: "TradeSide",
     return order
 
 
-def proportion_order(portfolio: 'Portfolio',
-                     source: 'Wallet',
-                     target: 'Wallet',
-                     proportion: float) -> 'Order':
+def proportion_order(
+    portfolio: 'Portfolio',
+    source: 'Wallet',
+    target: 'Wallet',
+    proportion: float) -> 'Order':
     """Creates an order that sends a proportion of funds from one wallet to
     another.
 

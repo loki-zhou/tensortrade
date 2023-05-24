@@ -63,11 +63,10 @@ class DataFeed(Stream[dict]):
 
 
 class PushFeed(DataFeed):
-    """A data feed for working with live data in an online manner.
+    """
+    A data feed for working with live data in an online manner.
 
-    All sources of data to be used with this feed must be a `Placeholder`. This
-    ensures that the user can wait until all of their data has been loaded for the
-    next time step.
+    All sources of data to be used with this feed must be a `Placeholder`. This ensures that the user can wait until all of their data has been loaded for the next time step.
 
     Parameters
     ----------

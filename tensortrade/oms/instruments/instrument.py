@@ -31,7 +31,7 @@ class Instrument:
         (e.g. AAPL, BTC, TSLA)
     precision : int
         The precision the amount of the instrument is denoted with.
-        (e.g. BTC=8, AAPL=1)
+        (e.g. BTC=1, AAPL=1)
     name : str, optional
         The name of the instrument being created.
     """
@@ -129,33 +129,33 @@ class Instrument:
 
 
 # Crypto
-BTC = Instrument('BTC', 8, 'Bitcoin')
-ETH = Instrument('ETH', 8, 'Ethereum')
-XRP = Instrument('XRP', 8, 'XRP')
-NEO = Instrument('NEO', 8, 'NEO')
-BCH = Instrument('BCH', 8, 'Bitcoin Cash')
-LTC = Instrument('LTC', 8, 'Litecoin')
-ETC = Instrument('ETC', 8, 'Ethereum Classic')
-XLM = Instrument('XLM', 8, 'Stellar Lumens')
-LINK = Instrument('LINK', 8, 'Chainlink')
-ATOM = Instrument('ATOM', 8, 'Cosmos')
-DAI = Instrument('DAI', 8, 'Dai')
-USDT = Instrument('USDT', 8, 'Tether')
+BTC = Instrument('BTC', 1, 'Bitcoin')
+ETH = Instrument('ETH', 1, 'Ethereum')
+XRP = Instrument('XRP', 1, 'XRP')
+NEO = Instrument('NEO', 1, 'NEO')
+BCH = Instrument('BCH', 1, 'Bitcoin Cash')
+LTC = Instrument('LTC', 1, 'Litecoin')
+ETC = Instrument('ETC', 1, 'Ethereum Classic')
+XLM = Instrument('XLM', 1, 'Stellar Lumens')
+LINK = Instrument('LINK', 1, 'Chainlink')
+ATOM = Instrument('ATOM', 1, 'Cosmos')
+DAI = Instrument('DAI', 1, 'Dai')
+USDT = Instrument('USDT', 1, 'Tether')
 
 # FX
-USD = Instrument('USD', 2, 'U.S. Dollar')
-EUR = Instrument('EUR', 2, 'Euro')
-JPY = Instrument('JPY', 2, 'Japanese Yen')
-KWN = Instrument('KWN', 2, 'Korean Won')
-AUD = Instrument('AUD', 2, 'Australian Dollar')
+USD = Instrument('USD', 1, 'U.S. Dollar')
+EUR = Instrument('EUR', 1, 'Euro')
+JPY = Instrument('JPY', 1, 'Japanese Yen')
+KWN = Instrument('KWN', 1, 'Korean Won')
+AUD = Instrument('AUD', 1, 'Australian Dollar')
 
 # Commodities
-XAU = Instrument('XAU', 2, 'Gold futures')
-XAG = Instrument('XAG', 2, 'Silver futures')
+XAU = Instrument('XAU', 1, 'Gold futures')
+XAG = Instrument('XAG', 1, 'Silver futures')
 
 # Stocks
 
-AAPL = Instrument('AAPL', 2, 'Apple stock')
-MSFT = Instrument('MSFT', 2, 'Microsoft stock')
-TSLA = Instrument('TSLA', 2, 'Tesla stock')
-AMZN = Instrument('AMZN', 2, 'Amazon stock')
+AAPL = Instrument('AAPL', 1, 'Apple stock')
+MSFT = Instrument('MSFT', 1, 'Microsoft stock')
+TSLA = Instrument('TSLA', 1, 'Tesla stock')
+AMZN = Instrument('AMZN', 1, 'Amazon stock')

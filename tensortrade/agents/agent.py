@@ -41,12 +41,13 @@ class Agent(Identifiable, metaclass=ABCMeta):
         raise NotImplementedError()
 
     @abstractmethod
-    def train(self,
-              n_steps: int = None,
-              n_episodes: int = 10000,
-              save_every: int = None,
-              save_path: str = None,
-              callback: callable = None,
-              **kwargs) -> float:
+    def train(
+        self,
+        n_steps: int = None,
+        n_episodes: int = 10000,
+        save_every: int = None,
+        save_path: str = None,
+        callback: callable = None,
+        **kwargs) -> float:
         """Train the agent in the environment and return the mean reward."""
         raise NotImplementedError()

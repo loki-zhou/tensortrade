@@ -25,7 +25,6 @@ from datetime import datetime
 DQNTransition = namedtuple('DQNTransition', ['state', 'action', 'reward', 'next_state', 'done'])
 
 
-@deprecated(version='1.0.4', reason="Builtin agents are being deprecated in favor of external implementations (ie: Ray)")
 class DQNAgent(Agent):
     """
 
@@ -176,11 +175,11 @@ class DQNAgent(Agent):
 
         dropout_3 = tf.keras.layers.Dropout(rate=dropout)(concat_conv_3)
 
-        pool_1 = tf.keras.layers.AveragePooling1D(pool_size=3, strides=2)(dropout_3)
+        #pool_1 = tf.keras.layers.AveragePooling1D(pool_size=3, strides=2)(dropout_3)
 
         gru_1 = tf.keras.layers.GRU(units=64, 
                                     activation='tanh', 
-                                    return_sequences=True)(pool_1)
+                                    return_sequences=True)(dropout_3)
 
         dropout_4 = tf.keras.layers.Dropout(rate=dropout)(gru_1)
 
@@ -320,7 +319,8 @@ class DQNAgent(Agent):
             while not done:
                 threshold = eps_end + (eps_start - eps_end) * np.exp(-total_steps_done / eps_decay_steps)
                 action = self.get_action(state, threshold=threshold)
-                next_state, reward, done, _ = self.env.step(action)
+                #next_state, reward, done, _ = self.env.step(action)
+                next_state, reward, done = self.env.step(action)
 
                 memory.push(state, action, reward, next_state, done)
 
