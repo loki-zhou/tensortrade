@@ -35,7 +35,7 @@ A2CTransition = namedtuple('A2CTransition', ['state', 'action', 'reward', 'done'
 class A2CAgent(Agent):
 
     def __init__(self,
-                 env: 'TradingEnvironment',
+                 env: 'TradingEnv',
                  shared_network: tf.keras.Model = None,
                  actor_network: tf.keras.Model = None,
                  critic_network: tf.keras.Model = None):

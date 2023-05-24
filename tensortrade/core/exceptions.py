@@ -181,12 +181,30 @@ class InsufficientFunds(Exception):
         More positional arguments for the exception.
     """
 
-    def __init__(self, balance: 'Quantity', size: 'Quantity', *args) -> None:
+    def __init__(
+        self, balance: 'Quantity', 
+        size: 'Quantity', 
+        #args
+        ) -> None:
         super().__init__(
-            "Insufficient funds for allocating size {} with balance {}.".format(size, balance),
-            *args
+            "Insufficient funds for allocating size {} with balance {}.".format(
+                size, balance),
+            #*args
         )
 
+# class ShortAgainstTheBoxException(Exception):
+#     """
+#     Raised when shorting against the box.
+#     More details: https://www.investopedia.com/terms/s/sellagainstthebox.asp
+
+#     Parameters
+#     ----------
+#     """
+#     def __init__(self, balance: 'Quantity', size: 'Quantity', *args) -> None:
+#         super().__init__(
+#             "Must sell the remaining {} balance first before shorting {}.".format(balance, size),
+#             *args
+#         )
 
 # =============================================================================
 # Trading Pair Exceptions
@@ -204,7 +222,11 @@ class InvalidTradingPair(Exception):
         More positional arguments for the exception.
     """
 
-    def __init__(self, base: 'Instrument', quote: 'Instrument', *args) -> None:
+    def __init__(
+        self, 
+        base: 'Instrument', 
+        quote: 'Instrument', 
+        *args) -> None:
         super().__init__(
             "Invalid instrument pair {}/{}.".format(base, quote),
             *args

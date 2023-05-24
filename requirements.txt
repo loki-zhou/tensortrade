@@ -1,7 +1,39 @@
-numpy>=1.17.0
-pandas>=0.25.0
-gym>=0.15.7
+git+https://github.com/grizzlybearg/quantstats.git
+git+https://github.com/grizzlybearg/ta.git
+git+https://github.com/grizzlybearg/mlfinlab.git
+git+https://github.com/grizzlybearg/sigopt-python.git
+git+https://github.com/grizzlybearg/mlflow.git
+
+ray[default] @ https://s3-us-west-2.amazonaws.com/ray-wheels/latest/ray-3.0.0.dev0-cp310-cp310-manylinux2014_x86_64.whl
+tensorflow>=2.11.0
+lean>=1.0.144
+#numpy>=1.22.0
+pandas>=1.5.3
+gymnasium>=0.27.1
 pyyaml>=5.1.2
+stochastic>=0.6.0
+ipython>=7.12.0
 matplotlib>=3.1.1
 plotly>=4.5.0
+ipywidgets>=7.0.0  # Required for rendering
 deprecated>=1.2.13
+azure-ai-ml>=1.4.0
+azureml-mlflow>=1.48.0
+wandb>0.13.0
+docker>= 6.0.1
+dm-tree>=0.1.8
+tensorboardX==2.5.1
+
+matplotlib>=3.6.2
+optuna>=3.1.0
+pandas-ta>=0.3.14b0
+plotly>=5.13.0
+scikit-image>=0.19.3
+seaborn>=0.12.2
+dash
+dask
+modin>=0.18.1
+mistune>=2.0.4
+fastai>=2.7.11
+
+

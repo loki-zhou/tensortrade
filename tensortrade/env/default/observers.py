@@ -6,9 +6,7 @@ import datetime as dt
 import numpy as np
 import pandas as pd
 
-#from gym.spaces import Box, Space
 from gymnasium.spaces import Box, Space
-
 from random import randrange
 
 
@@ -16,7 +14,7 @@ from tensortrade.feed.core import Stream, NameSpace, DataFeed
 from tensortrade.oms.wallets import Wallet
 from tensortrade.env.generic import Observer
 from collections import OrderedDict
-
+#TODO: Try importing the modules that are not defined and ignored under type: ignore flag and see if there's any circular imports
 
 def _create_wallet_source(wallet: 'Wallet', include_worth: bool = True) -> 'List[Stream[float]]':
     """Creates a list of streams to describe a `Wallet`.
@@ -53,7 +51,8 @@ def _create_wallet_source(wallet: 'Wallet', include_worth: bool = True) -> 'List
     return streams
 
 
-def _create_internal_streams(portfolio: 'Portfolio') -> 'List[Stream[float]]':
+def _create_internal_streams(portfolio: 'Portfolio' # type:ignore
+                            ) -> 'List[Stream[float]]':
     """Creates a list of streams to describe a `Portfolio`.
 
     Parameters
@@ -185,12 +184,12 @@ class TensorTradeObserver(Observer):
     """
 
     def __init__(self,
-                 portfolio: 'Portfolio',
-                 feed: 'DataFeed' = None,
-                 renderer_feed: 'DataFeed' = None,
-                 window_size: int = 1,
-                 min_periods: int = None,
-                 **kwargs) -> None:
+                portfolio: 'Portfolio', # type: ignore
+                feed: 'DataFeed' = None,
+                renderer_feed: 'DataFeed' = None,
+                window_size: int = 30,
+                min_periods: int = 30,
+                **kwargs) -> None:
         internal_group = Stream.group(_create_internal_streams(portfolio)).rename("internal")
         external_group = Stream.group(feed.inputs).rename("external")
 
@@ -247,7 +246,8 @@ class TensorTradeObserver(Observer):
                     obs_row = self.feed.next()["external"]
                     self.history.push(obs_row)
 
-    def observe(self, env: 'TradingEnv') -> np.array:
+    def observe(self, env: 'TradingEnv'# type:ignore
+                ) -> np.array:
         """Observes the environment.
 
         As a consequence of observing the `env`, a new observation is generated
@@ -331,13 +331,13 @@ class IntradayObserver(Observer):
     """
 
     def __init__(self,
-                 portfolio: 'Portfolio',
-                 feed: 'DataFeed' = None,
-                 renderer_feed: 'DataFeed' = None,
-                 stop_time: 'datetime.time' = dt.time(16, 0, 0),
-                 window_size: int = 1,
-                 min_periods: int = None,
-                 randomize: bool = False,
+                portfolio: 'Portfolio',# type:ignore
+                feed: 'DataFeed' = None,
+                renderer_feed: 'DataFeed' = None,
+                stop_time: 'dt.time' = dt.time(16, 0, 0),
+                window_size: int = 1,
+                min_periods: int = None,
+                randomize: bool = False,
                  **kwargs) -> None:
         internal_group = Stream.group(_create_internal_streams(portfolio)).rename("internal")
         external_group = Stream.group(feed.inputs).rename("external")
@@ -408,7 +408,9 @@ class IntradayObserver(Observer):
                     obs_row.pop('timestamp', None)
                     self.history.push(obs_row)
 
-    def observe(self, env: 'TradingEnv') -> np.array:
+    def observe(self, 
+                env: 'TradingEnv' # type: ignore
+                ) -> np.array: 
         """Observes the environment.
         As a consequence of observing the `env`, a new observation is generated
         from the `feed` and stored in the observation history.

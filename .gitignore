@@ -4,15 +4,9 @@
 *.swp
 *__pycache__
 *.egg-info
-*dist*
+dist
 build
 tags
-
-# Agents
-*.npy
-*.parquet
-*.db
-wandb
 
 # test-related
 .coverage
@@ -29,15 +23,8 @@ Pipfile
 # agent storage
 examples/agents
 examples/training_logs
-examples/tensorboard
-examples/monitor_log
-examples/saved_models
-.db
-
 
 # virtual environment
 venv
-
-# Credentials
-keys.txt*
-
+tensortrade/TT_extension/__pycache__/__init__.cpython-310.pyc
+tensortrade/TT_extension/__pycache__/__init__.cpython-310.pyc

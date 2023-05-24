@@ -3,7 +3,6 @@ from abc import abstractmethod
 from itertools import product
 from typing import Union, List, Any
 
-#from gym.spaces import Space, Discrete
 from gymnasium.spaces import Space, Discrete
 
 from tensortrade.core import Clock
@@ -283,16 +282,28 @@ class SimpleOrders(TensorTradeActionScheme):
 
         return [order]
 
+    def attach(self, listener):
+        self.listeners += [listener]
+        return self
+
+    def reset(self):
+        super().reset()
+        self.action = 0
 
 class ManagedRiskOrders(TensorTradeActionScheme):
-    """A discrete action scheme that determines actions based on managing risk,
-       through setting a follow-up stop loss and take profit on every order.
+    """
+    A discrete action scheme that determines actions based on managing risk, through setting a follow-up stop loss and take profit on every order.
+
+    This action scheme allows for modification. Future potential mods include:
+        1. Trading multiple tickers at the same time
+        2. Trading multiple asset classes at the same time
+
 
     Parameters
     ----------
-    stop : List[float]
+    stop_loss : List[float]
         A list of possible stop loss percentages for each order.
-    take : List[float]
+    take_profit : List[float]
         A list of possible take profit percentages for each order.
     trade_sizes : List[float]
         A list of trade sizes to select from when submitting an order.
@@ -311,19 +322,21 @@ class ManagedRiskOrders(TensorTradeActionScheme):
     """
 
     def __init__(self,
-                 stop: 'List[float]' = [0.02, 0.04, 0.06],
-                 take: 'List[float]' = [0.01, 0.02, 0.03],
-                 trade_sizes: 'Union[List[float], int]' = 10,
-                 durations: 'Union[List[int], int]' = None,
-                 trade_type: 'TradeType' = TradeType.MARKET,
-                 order_listener: 'OrderListener' = None,
-                 min_order_pct: float = 0.02,
-                 min_order_abs: float = 0.00) -> None:
+                stop_loss: 'List[float]' = [0.02, 0.04, 0.06],
+                take_profit: 'List[float]' = [0.04, 0.08, 0.12],
+                trade_sizes: 'Union[List[float], int]' = 10,
+                durations: 'Union[List[int], int]' = None,
+                trade_type: 'TradeType' = TradeType.MARKET,
+                order_listener: 'OrderListener' = None,
+                min_order_pct: float = 0.02,
+                min_order_abs: float = 0.00) -> None:
         super().__init__()
         self.min_order_pct = min_order_pct
         self.min_order_abs = min_order_abs
-        self.stop = self.default('stop', stop)
-        self.take = self.default('take', take)
+        self.stop_loss = self.default('Stop Loss', stop_loss)
+        self.take_profit = self.default('Take Profit', take_profit)
+        self.action = 0
+        
 
         trade_sizes = self.default('trade_sizes', trade_sizes)
         if isinstance(trade_sizes, list):
@@ -344,12 +357,13 @@ class ManagedRiskOrders(TensorTradeActionScheme):
     def action_space(self) -> 'Space':
         if not self._action_space:
             self.actions = product(
-                self.stop,
-                self.take,
+                self.stop_loss,
+                self.take_profit,
                 self.trade_sizes,
                 self.durations,
                 [TradeSide.BUY, TradeSide.SELL]
             )
+
             self.actions = list(self.actions)
             self.actions = list(product(self.portfolio.exchange_pairs, self.actions))
             self.actions = [None] + self.actions
@@ -359,23 +373,42 @@ class ManagedRiskOrders(TensorTradeActionScheme):
 
     def get_orders(self, action: int, portfolio: 'Portfolio') -> 'List[Order]':
 
+        '''
+        This code is a function that creates an order based on the given parameters. It takes in an action, portfolio and returns a list of orders. 
+        It checks the balance of the wallet associated with the portfolio & instrument and sets a size based on the proportion given. 
+        
+        If the size is less than 10^-instrument precision, less than min_order_pct or min_order_abs, it will return an empty list.
+        Otherwise, it will create a risk managed order with side, exchange pair, price, quantity, down percent (stop loss), up percent (take profit), portfolio, trade type and end (duration).
+        
+        Finally, it attaches an order listener if one is provided and returns a list containing the order created.
+        '''
         if action == 0:
             return []
 
-        (ep, (stop, take, proportion, duration, side)) = self.actions[action]
+        (ep, (stop_loss, take_profit, proportion, duration, side)) = self.actions[action]
+        # There's an issue with where the proportion is referenced from..
+        # How does the proportion translate to the trade sizes?
+        # Logic: trade_sizes is a list of floats, proportion is a float that represents a specific trade size 
+        # TODO: Confirm whether the above is true
 
         side = TradeSide(side)
-
         instrument = side.instrument(ep.pair)
         wallet = portfolio.get_wallet(ep.exchange.id, instrument=instrument)
-
         balance = wallet.balance.as_float()
+
+        if balance < 0 and side == TradeSide.SELL: # Short Selling??
+            # ignore sells of short positions aa it doesn't make sense
+            # short positions are to be bought back, not sold again.
+            # This is the perfect logic for setting up short selling. First, create an order type that's a mod of  risk_managed_order to allow for short selling
+            return []
+
         size = (balance * proportion)
         size = min(balance, size)
         quantity = (size * instrument).quantize()
-
-        if size < 10 ** -instrument.precision \
-                or size < self.min_order_pct * portfolio.net_worth \
+        
+        # #or size < 10 ** -instrument.precision \
+        # The above line causes an issue that leads to the Commission being lower than the instrument precision
+        if size < self.min_order_pct * portfolio.net_worth \
                 or size < self.min_order_abs:
             return []
 
@@ -384,8 +417,8 @@ class ManagedRiskOrders(TensorTradeActionScheme):
             'exchange_pair': ep,
             'price': ep.price,
             'quantity': quantity,
-            'down_percent': stop,
-            'up_percent': take,
+            'down_percent': stop_loss,
+            'up_percent': take_profit,
             'portfolio': portfolio,
             'trade_type': self._trade_type,
             'end': self.clock.step + duration if duration else None
@@ -398,6 +431,14 @@ class ManagedRiskOrders(TensorTradeActionScheme):
 
         return [order]
 
+    # Attach the action scheme or custom listener
+    def attach(self, listener): 
+        self.listeners += [listener]
+        return self
+
+    def reset(self):
+        super().reset()
+        self.action = 0
 
 _registry = {
     'bsh': BSH,

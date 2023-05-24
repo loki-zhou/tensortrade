@@ -12,5 +12,8 @@ from tensortrade.oms import (
 from . import env
 from . import stochastic
 from . import agents
+from . import tray_ext
+
+from . import TT_extension
 
 from .version import __version__

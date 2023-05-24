@@ -14,14 +14,15 @@ from tensortrade.feed.core import DataFeed
 from tensortrade.oms.wallets import Portfolio
 
 
-def create(portfolio: 'Portfolio',
-           action_scheme: 'Union[actions.TensorTradeActionScheme, str]',
-           reward_scheme: 'Union[rewards.TensorTradeRewardScheme, str]',
-           feed: 'DataFeed',
-           window_size: int = 1,
-           min_periods: int = None,
-           random_start_pct: float = 0.00,
-           **kwargs) -> TradingEnv:
+def create(
+    portfolio: 'Portfolio',
+    action_scheme: 'Union[actions.TensorTradeActionScheme, str]',
+    reward_scheme: 'Union[rewards.TensorTradeRewardScheme, str]',
+    feed: 'DataFeed',
+    window_size: int = 1,
+    min_periods: int = None,
+    random_start_pct: float = 0.00,
+    **kwargs) -> TradingEnv:
     """Creates the default `TradingEnv` of the project to be used in training
     RL agents.
 
@@ -56,6 +57,8 @@ def create(portfolio: 'Portfolio',
     reward_scheme = rewards.get(reward_scheme) if isinstance(reward_scheme, str) else reward_scheme
 
     action_scheme.portfolio = portfolio
+    # Why is the portfolio variable referencing the action_scheme instead of calling the env directly
+    # TODO: change to direct referencing after the changes already made take effect
 
     observer = observers.TensorTradeObserver(
         portfolio=portfolio,
@@ -66,7 +69,7 @@ def create(portfolio: 'Portfolio',
     )
 
     stopper = stoppers.MaxLossStopper(
-        max_allowed_loss=kwargs.get("max_allowed_loss", 0.5)
+        max_allowed_loss=kwargs.get("max_allowed_loss", 1.0)
     )
 
     renderer_list = kwargs.get("renderer", renderers.EmptyRenderer())

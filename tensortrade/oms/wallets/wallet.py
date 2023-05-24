@@ -12,9 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License
 
-from typing import Dict, Tuple
+from typing import Dict, Tuple, Union
 from collections import namedtuple
 from decimal import Decimal
+from numbers import Number
 
 import numpy as np
 
@@ -26,6 +27,7 @@ from tensortrade.core.exceptions import (
     QuantityNotLocked
 )
 from tensortrade.oms.instruments import Instrument, Quantity, ExchangePair
+from tensortrade.oms.instruments.quantity import NegativeQuantity
 from tensortrade.oms.orders import Order
 from tensortrade.oms.exchanges import Exchange
 from tensortrade.oms.wallets.ledger import Ledger
@@ -54,10 +56,26 @@ class Wallet(Identifiable):
         self.balance = balance.quantize()
         self._locked = {}
 
+    def _get_quantity(
+        self, 
+        instrument: 'Instrument', 
+        size: Union[Decimal, Number], 
+        path_id: str = None, 
+        allow_negative=False
+        ) -> 'Quantity':
+        return Quantity(
+            instrument=instrument, 
+            size=size, 
+            path_id=path_id, 
+            allow_negative=allow_negative)
+
     @property
     def locked_balance(self) -> 'Quantity':
-        """The total balance of the wallet locked in orders. (`Quantity`, read-only)"""
-        locked_balance = Quantity(self.instrument, 0)
+        """
+        The total balance of the wallet locked in orders. 
+        (`Quantity`, read-only)
+        """
+        locked_balance = self._get_quantity(self.instrument, 0)
 
         for quantity in self._locked.values():
             locked_balance += quantity.size
@@ -66,7 +84,10 @@ class Wallet(Identifiable):
 
     @property
     def total_balance(self) -> 'Quantity':
-        """The total balance of the wallet available for use and locked in orders. (`Quantity`, read-only)"""
+        """
+        The total balance of the wallet available for use and locked in orders.
+        (`Quantity`, read-only)
+        """
         total_balance = self.balance
 
         for quantity in self._locked.values():
@@ -76,7 +97,10 @@ class Wallet(Identifiable):
 
     @property
     def locked(self) -> 'Dict[str, Quantity]':
-        """The current quantities that are locked for orders. (`Dict[str, Quantity]`, read-only)"""
+        """
+        The current quantities that are locked for orders. 
+        (`Dict[str, Quantity]`, read-only)
+        """
         return self._locked
 
     def lock(self, quantity, order: 'Order', reason: str) -> 'Quantity':
@@ -107,8 +131,12 @@ class Wallet(Identifiable):
             raise DoubleLockedQuantity(quantity)
 
         if quantity > self.balance:
-            if (quantity-self.balance)>Decimal(10)**(-self.instrument.precision+2):
-                raise InsufficientFunds(self.balance, quantity)
+            if (quantity-self.balance)>Decimal(10)**(-(self.instrument.precision+2)):
+                raise InsufficientFunds(
+                    balance= self.balance, 
+                    size= quantity,
+                    #args=None TypeError: Value after * must be an iterable, not NoneType
+                    )
             else:
                 quantity = self.balance
 
@@ -124,11 +152,12 @@ class Wallet(Identifiable):
         self._locked[quantity.path_id] = self._locked[quantity.path_id].quantize()
         self.balance = self.balance.quantize()
 
-        self.ledger.commit(wallet=self,
-                           quantity=quantity,
-                           source="{}:{}/free".format(self.exchange.name, self.instrument),
-                           target="{}:{}/locked".format(self.exchange.name, self.instrument),
-                           memo="LOCK ({})".format(reason))
+        self.ledger.commit(
+            wallet=self,
+            quantity=quantity,
+            source="{}:{}/free".format(self.exchange.name, self.instrument),
+            target="{}:{}/locked".format(self.exchange.name, self.instrument),
+            memo="LOCK ({})".format(reason))
 
         return quantity
 
@@ -166,7 +195,11 @@ class Wallet(Identifiable):
             raise QuantityNotLocked(quantity)
 
         if quantity > self._locked[quantity.path_id]:
-            raise InsufficientFunds(self._locked[quantity.path_id], quantity)
+            raise InsufficientFunds(
+                balance= self._locked[quantity.path_id],
+                size= quantity,
+                #args=None TypeError: Value after * must be an iterable, not NoneType
+                )
 
         self._locked[quantity.path_id] -= quantity
         self.balance += quantity.free()
@@ -174,16 +207,18 @@ class Wallet(Identifiable):
         self._locked[quantity.path_id] = self._locked[quantity.path_id].quantize()
         self.balance = self.balance.quantize()
 
-        self.ledger.commit(wallet=self,
-                           quantity=quantity,
-                           source="{}:{}/locked".format(self.exchange.name, self.instrument),
-                           target="{}:{}/free".format(self.exchange.name, self.instrument),
-                           memo="UNLOCK {} ({})".format(self.instrument, reason))
+        self.ledger.commit(
+            wallet=self,
+            quantity=quantity,
+            source="{}:{}/locked".format(self.exchange.name, self.instrument),
+            target="{}:{}/free".format(self.exchange.name, self.instrument),
+            memo="UNLOCK {} ({})".format(self.instrument, reason))
 
         return quantity
 
     def deposit(self, quantity: 'Quantity', reason: str) -> 'Quantity':
-        """Deposits funds into the wallet.
+        """
+        Deposits funds into the wallet.
 
         Parameters
         ----------
@@ -207,16 +242,18 @@ class Wallet(Identifiable):
 
         self.balance = self.balance.quantize()
 
-        self.ledger.commit(wallet=self,
-                           quantity=quantity,
-                           source=self.exchange.name,
-                           target="{}:{}/locked".format(self.exchange.name, self.instrument),
-                           memo="DEPOSIT ({})".format(reason))
+        self.ledger.commit(
+            wallet=self,
+            quantity=quantity,
+            source=self.exchange.name,
+            target="{}:{}/locked".format(self.exchange.name, self.instrument),
+            memo="DEPOSIT ({})".format(reason))
 
         return quantity
 
     def withdraw(self, quantity: 'Quantity', reason: str) -> 'Quantity':
-        """Withdraws funds from the wallet.
+        """
+        Withdraws funds from the wallet.
 
         Parameters
         ----------
@@ -234,7 +271,11 @@ class Wallet(Identifiable):
             locked_quantity = self._locked[quantity.path_id]
             if quantity > locked_quantity:
                 if (quantity-locked_quantity)>Decimal(10)**(-self.instrument.precision+2):
-                    raise InsufficientFunds(locked_quantity, quantity)
+                    raise InsufficientFunds(
+                        balance= locked_quantity, 
+                        size= quantity
+                        #args=None TypeError: Value after * must be an iterable, not NoneType
+                        )
                 else:
                     quantity = locked_quantity
             self._locked[quantity.path_id] -= quantity
@@ -242,24 +283,30 @@ class Wallet(Identifiable):
         elif not quantity.is_locked:
             if quantity > self.balance:
                 if (quantity-self.balance)>Decimal(10)**(-self.instrument.precision+2):
-                    raise InsufficientFunds(self.balance, quantity)
+                    raise InsufficientFunds(
+                        balance= self.balance,
+                        size= quantity,
+                        #args=None TypeError: Value after * must be an iterable, not NoneType
+                        )
                 else:
                     quantity = self.balance
             self.balance -= quantity
 
         self.balance = self.balance.quantize()
 
-        self.ledger.commit(wallet=self,
-                           quantity=quantity,
-                           source="{}:{}/locked".format(self.exchange.name, self.instrument),
-                           target=self.exchange.name,
-                           memo="WITHDRAWAL ({})".format(reason))
+        self.ledger.commit(
+            wallet=self,
+            quantity=quantity,
+            source="{}:{}/locked".format(self.exchange.name, self.instrument),
+            target=self.exchange.name,
+            memo="WITHDRAWAL ({})".format(reason))
 
         return quantity
 
     @classmethod
     def from_tuple(cls, wallet_tuple: 'Tuple[Exchange, Instrument, float]') -> 'Wallet':
-        """Creates a wallet from a wallet tuple.
+        """
+        Creates a wallet from a wallet tuple.
 
         Parameters
         ----------
@@ -275,13 +322,15 @@ class Wallet(Identifiable):
         return cls(exchange, Quantity(instrument, balance))
 
     @staticmethod
-    def transfer(source: 'Wallet',
-                 target: 'Wallet',
-                 quantity: 'Quantity',
-                 commission: 'Quantity',
-                 exchange_pair: 'ExchangePair',
-                 reason: str) -> 'Transfer':
-        """Transfers funds from one wallet to another.
+    def transfer(
+        source: 'Wallet',
+        target: 'Wallet',
+        quantity: 'Quantity',
+        commission: 'Quantity',
+        exchange_pair: 'ExchangePair',
+        reason: str) -> 'Transfer':
+        """
+        Transfers funds from one wallet to another.
 
         Parameters
         ----------
@@ -332,11 +381,13 @@ class Wallet(Identifiable):
             instrument = exchange_pair.pair.base
             converted_size = quantity.size * exchange_pair.price
 
-        converted = Quantity(instrument, converted_size, quantity.path_id).quantize()
+        converted =  target._get_quantity(
+            instrument, converted_size, quantity.path_id).quantize()
 
-        converted = target.deposit(converted, 'TRADED {} {} @ {}'.format(quantity,
-                                                                         exchange_pair,
-                                                                         exchange_pair.price))
+        converted = target.deposit(converted, 'TRADED {} {} @ {}'.format(
+            quantity,
+            exchange_pair,
+            exchange_pair.price))
 
         lsb2 = source.locked.get(poid).size
         ltb2 = target.locked.get(poid, 0 * pair.quote).size
@@ -366,7 +417,7 @@ class Wallet(Identifiable):
 
     def reset(self) -> None:
         """Resets the wallet."""
-        self.balance = Quantity(self.instrument, self._initial_size).quantize()
+        self.balance = self._get_quantity(self.instrument, self._initial_size).quantize()
         self._locked = {}
 
     def __str__(self) -> str:
@@ -374,3 +425,108 @@ class Wallet(Identifiable):
 
     def __repr__(self) -> str:
         return str(self)
+
+class ShortAgainstTheBoxException(Exception):
+    """
+    Raised when shorting against the box.
+    More details: https://www.investopedia.com/terms/s/sellagainstthebox.asp
+
+    Parameters
+    ----------
+    """
+    def __init__(self, balance: 'Quantity', size: 'Quantity', *args) -> None:
+        super().__init__(
+            "Must sell the remaining {} balance first before shorting {}.".format(
+                balance, size),
+            *args
+        )
+
+class MarginWallet(Wallet):
+    def __init__(
+        self, 
+        exchange: 'Exchange',
+        balance: 'Quantity'):
+        super().__init__(exchange, balance)
+
+    def _get_quantity(
+        self, 
+        instrument: 'Instrument',
+        size: Union[Decimal, Number],
+        path_id: str = None
+        ) -> 'Quantity':
+        return super()._get_quantity(instrument, size, path_id, allow_negative=True)
+
+    def lock(self, quantity, order: 'Order', reason: str) -> 'Quantity':
+        try:
+            return super().lock(quantity, order, reason)
+        except InsufficientFunds:
+            if self.balance > 0:
+                raise ShortAgainstTheBoxException(self.balance, quantity)
+
+            quantity = NegativeQuantity(
+                quantity.instrument,
+                quantity.size,
+                quantity.path_id)
+            self.balance = NegativeQuantity(
+                instrument= self.balance.instrument,
+                size= self.balance.size,
+                path_id= self.balance.path_id)
+            self.balance -= quantity
+
+            quantity = quantity.lock_for(order.path_id)
+
+            if quantity.path_id not in self._locked:
+                self._locked[quantity.path_id] = quantity
+            else:
+                self._locked[quantity.path_id] += quantity
+
+            self._locked[quantity.path_id] = self._locked[quantity.path_id].quantize()
+            self.balance = self.balance.quantize()
+
+            self.ledger.commit(wallet=self,
+                            quantity=quantity,
+                            source="{}:{}/free".format(
+                                self.exchange.name, self.instrument),
+                            target="{}:{}/locked".format(
+                                self.exchange.name, self.instrument),
+                            memo="LOCK ({})".format(reason))
+
+            return quantity
+
+    def withdraw(self, quantity: 'Quantity', reason: str) -> 'Quantity':
+        try:
+            return super().withdraw(quantity, reason)
+        except InsufficientFunds:
+            # try to move past this. as long as the balance is 0 and nothing is locked in an order, allow shorting
+            locked_quantity = 0 if quantity.path_id == None else self._locked[quantity.path_id]
+            if self.balance > 0 or locked_quantity > 0:
+                raise ShortAgainstTheBoxException(self.balance, quantity)
+            
+            quantity = NegativeQuantity(
+                instrument= quantity.instrument, 
+                size= quantity.size, 
+                path_id= quantity.path_id)
+            self.balance = NegativeQuantity(
+                instrument= self.balance.instrument, 
+                size= self.balance.size, 
+                path_id= self.balance.path_id)
+            self.balance -= quantity
+            self.balance = self.balance.quantize()
+
+            self.ledger.commit(wallet=self,
+                            quantity=quantity,
+                            source="{}:{}/locked".format(
+                                self.exchange.name,
+                                self.instrument),
+                            target=self.exchange.name,
+                            memo="WITHDRAWAL ({})".format(reason))
+            return quantity
+        
+    def deposit(self, quantity: 'Quantity', reason: str) -> 'Quantity':
+        qty: Quantity = super().deposit(quantity, reason)
+        
+        # if type(self.balance) is NegativeQuantity and self.total_balance >= 0:
+        #     self.balance = NegativeQuantity(self.balance).to_positive_quantity()
+
+        return qty
+        
