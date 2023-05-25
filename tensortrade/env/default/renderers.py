@@ -1,3 +1,16 @@
+# Copyright 2020 The TensorTrade Authors.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License
 
 import os
 import sys
@@ -269,7 +282,7 @@ class FileLogger(BaseRenderer):
                    trades: 'OrderedDict' = None) -> None:
         log_entry = self._create_log_entry(episode, max_episodes, step, max_steps)
         self._logger.info(f"{log_entry} - Performance:\n{performance}")
-    
+
     def reset(self) -> None:
         """Resets the renderer.
         """
@@ -295,7 +308,7 @@ class PlotlyTradingChart(BaseRenderer):
     `auto_open_html` : bool
         Works for save_format='html' only. True to automatically open the saved chart HTML file in the default browser, False otherwise.
     `include_plotlyjs` : Union[bool, str]
-        Whether to include/load the plotly.js library in the saved file. 'cdn' results in a smaller file by loading the library online but requires an Internet connect while True includes the library resulting  in much larger file sizes. False to not include the library. 
+        Whether to include/load the plotly.js library in the saved file. 'cdn' results in a smaller file by loading the library online but requires an Internet connect while True includes the library resulting  in much larger file sizes. False to not include the library.
         For more details, refer to https://plot.ly/python-api-reference/generated/plotly.graph_objects.Figure.html
 
     Notes
@@ -304,7 +317,7 @@ class PlotlyTradingChart(BaseRenderer):
         - Saving images without using Orca.
         - Limit displayed step range for the case of a large number of steps and let the shown part of the chart slide after filling that range to keep showing recent data as it's being added.
         - Plotting for short selling
-        - TODO: Enhancements to use dash and a dashboard instead - migrate the 
+        - TODO: Enhancements to use dash and a dashboard instead - migrate the
 
     References
     ----------
@@ -317,9 +330,9 @@ class PlotlyTradingChart(BaseRenderer):
 
     def __init__(self,
                 display: bool = True,
-                height: int | None = None,
+                height: int = None,
                 timestamp_format: str = '%Y-%m-%d %H:%M:%S',
-                save_format: str | None  = None,
+                save_format: str = None,
                 path: str = 'charts',
                 filename_prefix: str = 'chart_',
                 auto_open_html: bool = False,
@@ -356,8 +369,8 @@ class PlotlyTradingChart(BaseRenderer):
             )
             fig.add_trace(
                 go.Candlestick(
-                name='Price', 
-                xaxis='x1', 
+                name='Price',
+                xaxis='x1',
                 yaxis='y1',
                 showlegend=False), row=1, col=1)
             fig.update_layout(xaxis_rangeslider_visible=False)
@@ -370,7 +383,7 @@ class PlotlyTradingChart(BaseRenderer):
 
             fig.add_trace(
                 go.Scatter(
-                mode='lines', name='Net Worth', 
+                mode='lines', name='Net Worth',
                 marker={'color': 'DarkGreen'}), row=4, col=1)
 
             fig.update_xaxes(linecolor='Grey', gridcolor='Gainsboro')
@@ -390,7 +403,7 @@ class PlotlyTradingChart(BaseRenderer):
             self.fig.update_annotations({'font': {'size': 12}})
             self.fig.update_layout(template='plotly_white', height=self._height, margin=dict(t=50))
             self._base_annotations = self.fig.layout.annotations
-        else: 
+        else:
             pass
 
     def _create_trade_annotations(
@@ -489,7 +502,7 @@ class PlotlyTradingChart(BaseRenderer):
             net_worth: pd.Series = None,
             performance: pd.DataFrame = None,
             trades: 'OrderedDict' = None) -> None:
-        
+
         if self.render_mode is not None:
             if price_history is None:
                 raise ValueError("renderers() is missing required positional argument 'price_history'.")
@@ -1201,7 +1214,7 @@ class PLSHPositionChangeChart(BaseRenderer):
 
     def _render_trades(self, trades,
         env: TradingEnv) -> None:
-        
+
         history = pd.DataFrame(env.observer.render_history)
         actions = list(history.action)
         price = list(history.close)
@@ -1222,10 +1235,10 @@ class PLSHPositionChangeChart(BaseRenderer):
                 # Enter Short == 2
                 # Exit Short == 3
                 # Implement logic for transition from hold to enter long and short positions
-            
+
             # If previous position has changed,
             if current_action != previous_action and current_action != -1:
-                
+
                 # Transition from 0 to 1 means that an existing long position is closed
                 if current_action == 1 and previous_action == 0:
                     exit_long[i] = price[i]
@@ -1239,7 +1252,7 @@ class PLSHPositionChangeChart(BaseRenderer):
                     if previous_action == 2:
                         exit_short[i] = price[i]
                     enter_long[i] = price[i]
-                
+
                 # Transition from 0 to 2 means that an existing long position is closed and a short position is opened
                 if current_action == 2:
                     if previous_action == 0:
@@ -1252,9 +1265,9 @@ class PLSHPositionChangeChart(BaseRenderer):
                 #    if previous_action == 2:
                 #        exit_short[i] = price[i]
                 #    exit_long[i] = price[i]
-        
+
         enter_long_series = pd.Series(enter_long, dtype = 'object')
-        enter_short_series = pd.Series(enter_short, dtype='objecct')  
+        enter_short_series = pd.Series(enter_short, dtype='objecct')
         exit_long_series = pd.Series(exit_long, dtype='object')
         exit_short_series = pd.Series(exit_short, dtype='object')
 
@@ -1262,7 +1275,7 @@ class PLSHPositionChangeChart(BaseRenderer):
         enter_short_series_color = 'b'
         exit_long_series_color = 'r'
         exit_short_series_color = 'y'
-        
+
         self.price_ax.scatter(
             enter_long_series.index,
             enter_long_series.values,
@@ -1278,7 +1291,7 @@ class PLSHPositionChangeChart(BaseRenderer):
             arrowprops=dict(
                 arrowstyle='simple',
                 facecolor=enter_long_series_color))'''
-            
+
         self.price_ax.scatter(
             exit_long_series.index,
             exit_long_series.values,
@@ -1326,7 +1339,7 @@ class PLSHPositionChangeChart(BaseRenderer):
             arrowprops=dict(
                 arrowstyle='simple',
                 facecolor=exit_short_series_color))'''
-                
+
     def render_env(
         self,
         episode: int = None,
