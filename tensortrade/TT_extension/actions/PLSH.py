@@ -1,5 +1,5 @@
 from tensortrade.env.default.actions import TensorTradeActionScheme
-from gym.spaces import Discrete, Tuple, Box
+from gymnasium.spaces import Discrete, Tuple, Box
 from tensortrade.oms.wallets import Wallet, Portfolio, MarginWallet
 from tensortrade.oms.instruments import Quantity, ExchangePair, TradingPair
 from tensortrade.env.generic import TradingEnv
