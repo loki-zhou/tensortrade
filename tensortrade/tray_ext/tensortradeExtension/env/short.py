@@ -7,7 +7,7 @@ from tensortrade.env.generic.components.renderer import AggregateRenderer
 from tensortrade.feed.core import DataFeed
 from tensortrade.oms.wallets import Portfolio
 
-from tensortrade.tray_ext.tensortradeExtension.env.stoppers.shortStopper import ShortStopper
+from rl_fts.tensortradeExtension.env.stoppers.shortStopper import ShortStopper
 
 
 def create(portfolio: 'Portfolio',

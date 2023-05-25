@@ -1,6 +1,6 @@
 from .buy_sell_hold import BSH
 from .proportion_buy_hold_sell import PBSH
-from .long_short_hold import LSH
+from .buy_sell_short_hold import BSSH
 from .short_hold import SH
 from .proportion_short_hold import PSH
 from .proportion_buy_sell_short_hold import PBSSH
@@ -10,7 +10,7 @@ from tensortrade.env.generic import ActionScheme
 _registry = {
     'buy-sell-hold': BSH,
     'proportion-buy-hold-sell': PBSH,
-    'long-short-hold': LSH,
+    'buy-sell-short-hold': BSSH,
     'short-hold': SH,
     'proportion-short-hold': PSH,
     'proportion-buy-sell-short-hold': PBSSH,

@@ -1,7 +1,7 @@
 from tensortrade.env.default.actions import TensorTradeActionScheme
-from gymnasium.spaces import Discrete, Tuple, Box
-from tensortrade.oms.wallets import Wallet, Portfolio, MarginWallet
-from tensortrade.oms.instruments import Quantity, ExchangePair, TradingPair, NegativeQuantity
+from gym.spaces import Discrete, Tuple, Box
+from tensortrade.oms.wallets import Wallet, Portfolio
+from tensortrade.oms.instruments import Quantity, ExchangePair, TradingPair
 from tensortrade.env.generic import TradingEnv
 
 import logging
@@ -205,28 +205,11 @@ class PBSSH(TensorTradeActionScheme):
     def sellOrder(self, proportion):
         """execute a sell order"""
         order = None
-        # if we are currently in a short
-        # if self.currently_in_short:
-        #     # we need to exit the short, then make the buy order
-        #     order = self.exitShort()
         if self.asset.balance.as_float() > 0:
             order = proportion_order(self.portfolio, self.asset, self.cash, (proportion / 100))
         return order
 
     def enterShort(self, proportion):
-        # if we currently have no funds to short (sell all asset)
-        # if self.cash.balance.as_float() == 0:
-        #     sell_order = self.sellOrder(100)
-        #     self.broker.submit(sell_order)
-        #     self.broker.update()
-
-        '''
-        Currently, the oms is unable to receive short selling orders.
-        There are two ways to fix this.
-        1. Use NegativeQuantity to represent short selling orders.
-        2. Use the Margit Wallet instead
-        '''
-            
         # requirements for entering a short
         total_required_amount = (proportion / 100) * self.cash.balance
         if total_required_amount < self.minimum_short_deposit:
@@ -234,11 +217,11 @@ class PBSSH(TensorTradeActionScheme):
 
         # The borrowed asset must be created and placed in the brokers wallet
         borrow_size = total_required_amount.as_float() * (proportion/100) / self.borrow_requirement
-        self.borrow_cash = NegativeQuantity(self.cash.balance.instrument, borrow_size)
+        self.borrow_cash = Quantity(self.cash.balance.instrument, borrow_size)
         # remove commision from the borrow quantity (commision charged to the agent)
         borrow_commision = self.borrow_cash * self.commission
         # set the final cash and asset quantities
-        self.borrow_cash: NegativeQuantity = self.borrow_cash - borrow_commision
+        self.borrow_cash: Quantity = self.borrow_cash - borrow_commision
         self.borrow_asset = self.borrow_cash.convert(self.exchange_pair)
         # When the agent enters the short position, the borrow limit must be transfered (cash -> deposit_margin)
         self.transfer(

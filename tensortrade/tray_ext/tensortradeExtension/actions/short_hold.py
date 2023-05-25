@@ -13,7 +13,7 @@
         - 
 """
 from tensortrade.env.default.actions import TensorTradeActionScheme
-from gymnasium.spaces import Discrete
+from gym.spaces import Discrete
 from tensortrade.oms.wallets import Wallet, Portfolio
 from tensortrade.oms.instruments import Quantity, ExchangePair, TradingPair
 from tensortrade.env.generic import TradingEnv
